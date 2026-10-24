@@ -243,6 +243,27 @@ pre.chords .c:active{background:var(--fill2)}
 .stage-mic{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));right:calc(max(12px,env(safe-area-inset-right,0px)) + 48px);z-index:6;height:40px;padding:0 12px;border-radius:20px;border:.5px solid var(--glass-line);font-size:14px;color:var(--danger);font-weight:600;display:none}
 .stage .stage-mic:not([hidden]){display:block}
 @media (prefers-reduced-motion: reduce){.nbtn.mic.on{animation:none}}
+.plrow{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;padding:8px 14px 8px 12px;position:relative}
+.plrow + .plrow::before{content:"";position:absolute;top:0;left:80px;right:0;height:.5px;background:var(--sep)}
+.plrow .t{font-size:17px;font-weight:600}.plrow .a{font-size:14px;color:var(--fg2)}
+.plrow svg.i{width:14px;height:14px;stroke:var(--fg3);stroke-width:2.5}
+.col{width:56px;height:56px;border-radius:10px;overflow:hidden;flex:none;display:grid;background:var(--fill)}
+.col.grid{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.col.grid img{width:100%;height:100%;object-fit:cover;max-width:none}
+.col.one .art{width:100%;height:100%;border-radius:0}
+.col.empty{place-items:center;font-size:24px;color:var(--accent);background:linear-gradient(140deg,var(--fill2),var(--fill))}
+.col.sm{width:44px;height:44px;border-radius:8px}
+.col.big{width:180px;height:180px;border-radius:16px;box-shadow:var(--shadow);font-size:56px}
+.col.big.one .art{font-size:44px}
+.plhero{display:flex;justify-content:center;padding:4px 0 14px}
+.newpl{width:100%;margin-top:14px}
+.pk{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;width:100%;text-align:left;padding:8px 14px 8px 12px;position:relative}
+.pk + .pk::before{content:"";position:absolute;top:0;left:68px;right:0;height:.5px;background:var(--sep)}
+.pk .t{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pk .a{font-size:13px;color:var(--fg2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pk .txt{min-width:0}
+.chk{width:26px;height:26px;border-radius:13px;border:1.5px solid var(--fg3);display:grid;place-items:center;color:transparent;font-weight:700;font-size:14px}
+.chk.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.reo .rmb{background:none;color:var(--danger);font-size:20px}
 .tuner{align-items:center;text-align:center;padding-top:10px}
 .tn-note{font-size:96px;font-weight:700;line-height:1;letter-spacing:-.02em;display:flex;align-items:flex-start;gap:4px;justify-content:center}
 .tn-note small{font-size:24px;color:var(--fg2);margin-top:12px}
@@ -283,9 +304,11 @@ pre.chords .c:active{background:var(--fill2)}
 
 <div id="home">
   <div class="nav gut" id="nav">
-    <div class="left"><button class="nbtn" id="editSet" hidden>Править</button></div>
+    <div class="left"><button class="back" id="plBack" hidden><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>Вечер</button></div>
     <div class="mid" id="navTitle">Песни</div>
     <div class="right">
+      <button class="nbtn" id="editSet" hidden>Править</button>
+      <button class="nbtn" id="plMore" hidden aria-label="Меню плейлиста"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h.01M12 12h.01M16 12h.01" stroke-width="3"/></svg></button>
       <button class="nbtn" id="histBtn" hidden aria-label="История вечеров"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></button>
       <button class="nbtn" id="addBtn" aria-label="Добавить песню"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
       <button class="nbtn" id="moreBtn" aria-label="Ещё"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h.01M12 12h.01M16 12h.01" stroke-width="3"/></svg></button>
@@ -296,7 +319,8 @@ pre.chords .c:active{background:var(--fill2)}
       <div class="large"><h1 id="bigTitle">Песни</h1><p id="count"></p></div>
       <div class="search" id="searchWrap"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
         <input id="q" type="search" placeholder="Песня, исполнитель или строчка" autocomplete="off" aria-label="Поиск"><button class="clr" id="qClr" hidden aria-label="Очистить">✕</button></div>
-      <div class="actions" id="eveActions" hidden><button class="pill primary" id="startEve"><svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none;width:18px;height:18px"><path d="M7 4.5v15l13-7.5z"/></svg>Начать вечер</button></div>
+      <div id="plHeroBox"></div>
+      <div class="actions" id="eveActions" hidden><button class="pill primary" id="startEve"><svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none;width:18px;height:18px"><path d="M7 4.5v15l13-7.5z"/></svg>Начать</button><button class="pill" id="shuffleEve"><svg class="i" viewBox="0 0 24 24" style="width:18px;height:18px"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>Перемешать</button></div>
       <div id="list"></div>
     </div>
   </main>
@@ -354,10 +378,10 @@ pre.chords .c:active{background:var(--fill2)}
 const SONGS = [{"a":"Isko","s":"так не спокойна","m":"isko/264000-isko-tak-ne-spokoyna.html","c":"d869bfb3ac01c23760dc3f14ce1eb1d0"},{"a":"Isko","s":"Любовь в ресторане","m":"isko/269657-isko-lyubov-v-restorane.html","c":"c6110f850221b942bba84ce660ae28d6"},{"a":"Isko","s":"Влюблённые глаза","m":"isko/272703-isko-vlyublennyye-glaza.html","c":"46ae5bb5bcd9782823fd9623e7a537c0"},{"a":"Isko","s":"Забери","c":"c2d28bb5902fb4b93bef883010aa4b15"},{"a":"Isko","s":"Хочешь","c":"6d0a555f44abc673700fd2ebe7a992b4"},{"a":"Isko","s":"Навсегда","m":"isko/277919-isko-navsegda.html","c":"235a82be8990ef3b9d127dfd397e1552"},{"a":"Isko","s":"Моя душа","m":"isko/269613-isko-moya-dusha.html","c":"7d1bea976bbc0c94ec2517e8b30b15df"},{"a":"Isko","s":"Загадал тебя","c":"e116df5fea42f0349e69c6591ff7c8d8"},{"a":"Isko","s":"Вместе сияли","m":"isko/278546-isko-vmeste-siyali.html","c":"5b671c65b800f272daed3576b00aef53"},{"a":"Кино","s":"Группа крови","m":"kino/1078-kino-gruppa-krovi.html","k":"kino/gruppa-krovi/","c":"b39e82e1e4fdaf3f08ae582e8c9565cd"},{"a":"Кино","s":"Звезда по имени Солнце","m":"kino/1090-kino-zvezda-po-imeni-solnce.html","k":"kino/zvezda-po-imeni-solnce/","c":"b4076a916063e924824664e18292fad2"},{"a":"Кино","s":"Кукушка","m":"kino/273184-kino-kukushka.html","k":"kino/kukushka/","c":"72854c811a50236b48b8998221bd764e"},{"a":"Кино","s":"Пачка сигарет","m":"kino/1129-kino-pachka-sigaret.html","k":"kino/pachka-sigaret/","c":"72854c811a50236b48b8998221bd764e"},{"a":"Кино","s":"Хочу перемен","m":"kino/1131-kino-peremen.html","k":"kino/peremen/","c":"72854c811a50236b48b8998221bd764e"},{"a":"Кино","s":"Кончится лето","m":"kino/1100-kino-konchitsya-leto.html","k":"kino/konchitsja-leto/","c":"72854c811a50236b48b8998221bd764e"},{"a":"Кино","s":"Восьмиклассница","m":"kino/1069-kino-vosmiklassnica.html","k":"kino/vosmiklassnica/","c":"72854c811a50236b48b8998221bd764e"},{"a":"Кино","s":"Спокойная ночь","m":"kino/271660-kino-spokoynaya-noch.html","k":"kino/spokojnaya-noch/","c":"72854c811a50236b48b8998221bd764e"},{"a":"Кино","s":"Апрель","m":"kino/64467-kino-aprel.html","k":"kino/aprel/","c":"b4076a916063e924824664e18292fad2"},{"a":"Кино","s":"Мама, мы все сошли с ума","m":"kino/1111-kino-mama-my-vse-soshli-s-uma.html","c":"b39e82e1e4fdaf3f08ae582e8c9565cd"},{"a":"Кино","s":"Последний герой","m":"kino/1141-kino-poslednij-geroj.html","k":"kino/poslednij-geroj/","c":"72854c811a50236b48b8998221bd764e"},{"a":"Кино","s":"Алюминиевые огурцы","m":"kino/273602-kino-alyuminiyevyye-ogurtsy.html","k":"kino/aljuminievye-ogurcy/","c":"37b0ced101537d62cec9a48962b344bf"},{"a":"Кино","s":"Война","m":"kino/1067-kino-vojna.html","k":"kino/voyna-2/","c":"db588cbe37c78a037e8eeb382dff1753"},{"a":"Кино","s":"Песня без слов","m":"kino/1133-kino-pesnya-bez-slov.html","k":"kino/pesnja-bez-slov/","c":"b4076a916063e924824664e18292fad2"},{"a":"Кино","s":"Красно-жёлтые дни","m":"kino/1102-kino-krasno-zheltye-dni.html","k":"kino/krasno-zhyoltye-dni/","c":"72854c811a50236b48b8998221bd764e"},{"a":"Кино","s":"Видели ночь","m":"kino/1065-kino-videli-noch.html","k":"kino/videli-noch/","c":"f6eb38e5f1d70e6af48fdc7b10d426c1"},{"a":"Кино","s":"Печаль","m":"kino/1137-kino-pechal.html","k":"kino/pechal/","c":"b4076a916063e924824664e18292fad2"},{"a":"Кино","s":"Следи за собой","m":"kino/1159-kino-sledi-za-soboj.html","k":"kino/sledi-za-soboy/","c":"21fb9d53b9114edceac0836d45e15f7e"},{"a":"Кино","s":"Бошетунмай","m":"kino/273607-kino-boshetunmay.html","k":"kino/boshetunmay/","c":"b39e82e1e4fdaf3f08ae582e8c9565cd"},{"a":"Кино","s":"Легенда","m":"kino/248633-kino-legenda.html","k":"kino/legenda/","c":"b39e82e1e4fdaf3f08ae582e8c9565cd"},{"a":"Кино","s":"Звёзды останутся здесь","m":"kino/272034-kino-zvezdy-ostanutsya-zdes.html","c":"f6eb38e5f1d70e6af48fdc7b10d426c1"},{"a":"Кино","s":"Это не любовь","m":"kino/244814-kino-eto-ne-lyubov.html","k":"kino/eto-ne-lyubov/","c":"77a31ba75523944643f0cdf0b607400d"},{"a":"Кино","s":"Нам с тобой","m":"kino/266715-kino-nam-s-toboy.html","k":"kino/nam-s-toboj/","c":"21fb9d53b9114edceac0836d45e15f7e"},{"a":"Кино","s":"Электричка","m":"kino/277267-kino-elektrichka.html","k":"kino/elektrichka/","c":"db588cbe37c78a037e8eeb382dff1753"},{"a":"Кино","s":"Троллейбус","m":"kino/1172-kino-trollejbus.html","k":"kino/trolleybus/","c":"db588cbe37c78a037e8eeb382dff1753"},{"a":"Кино","s":"Когда твоя девушка больна","m":"kino/1098-kino-kogda-tvoya-devushka-bolna.html","k":"kino/kogda-tvoya-devushka-bolna/","c":"21fb9d53b9114edceac0836d45e15f7e"},{"a":"Кино","s":"Дальше действовать будем мы","m":"kino/1080-kino-dalshe-dejstvovat-budem-my.html","k":"kino/dalshe-deystvovat-budem-my/","c":"b39e82e1e4fdaf3f08ae582e8c9565cd"},{"a":"Кино","s":"Муравейник","m":"kino/1119-kino-muravejnik.html","k":"kino/muraveynik/","c":"21fb9d53b9114edceac0836d45e15f7e"}];
 SONGS.forEach((s,i)=>s.id=i);
 const KEY='pesennik.david.v1';
-let st={fav:{},chords:{},tr:{},capo:{},simp:{},simpPrev:{},strum:{},bpm:{},custom:[],order:[],hist:[],fs:16};
+let st={fav:{},chords:{},tr:{},capo:{},simp:{},simpPrev:{},strum:{},bpm:{},custom:[],pl:[],order:[],hist:[],fs:16};
 try{const raw=localStorage.getItem(KEY);if(raw)st=Object.assign(st,JSON.parse(raw))}catch(e){}
 ['fav','chords','tr','capo','simp','simpPrev','strum','bpm'].forEach(k=>{if(!st[k]||typeof st[k]!=='object')st[k]={}});
-if(!Array.isArray(st.custom))st.custom=[];if(!Array.isArray(st.order))st.order=[];
+if(!Array.isArray(st.custom))st.custom=[];if(!Array.isArray(st.order))st.order=[];if(!Array.isArray(st.pl))st.pl=[];
 function save(){st.updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}if(typeof push==='function')push()}
 const ls={get(k,d){try{const v=localStorage.getItem(KEY+'.'+k);return v===null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(KEY+'.'+k,v)}catch(e){}}};
 const $=id=>document.getElementById(id);
@@ -390,16 +414,35 @@ let tab=ls.get('tab','all'); if(!['all','eve','mine'].includes(tab))tab='all';
 let sort=ls.get('sort2','added'); if(!['added','song','artist'].includes(sort))sort='added';
 let editSet=false, lastItems=[];
 const TITLES={all:'Песни',eve:'Вечер',mine:'Мои'};
-document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;ls.set('tab',tab);editSet=false;window.scrollTo(0,0);renderHome()});
+let curPl=ls.get('pl','')||null;
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{if(b.dataset.tab==='eve'&&tab==='eve'){curPl=null;ls.set('pl','')}
+  tab=b.dataset.tab;ls.set('tab',tab);editSet=false;window.scrollTo(0,0);renderHome()});
 function updateBadge(){}
+
+/* ---------- плейлисты ---------- */
+const plGet=id=>id==='fav'?{id:'fav',name:'Избранное',fav:true,songs:st.order}:st.pl.find(p=>p.id===id);
+const plList=()=>[plGet('fav')].concat(st.pl);
+const byKey=k=>ALL.find(x=>idOf(x)===k);
+const plKeys=id=>{const p=plGet(id);return p?p.songs.filter(k=>byKey(k)):[]};
+const plHas=(id,k)=>id==='fav'?!!st.fav[k]:!!(plGet(id)&&plGet(id).songs.includes(k));
+const inAnyPl=k=>!!st.fav[k]||st.pl.some(p=>p.songs.includes(k));
+function plToggle(id,k){if(id==='fav'){toggleFav(k);return}const p=plGet(id);if(!p)return;const i=p.songs.indexOf(k);if(i>=0)p.songs.splice(i,1);else p.songs.push(k);save()}
+function plNew(name,keys){const p={id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,5),name:name.trim()||'Новый плейлист',songs:(keys||[]).slice(),t:Date.now()};st.pl.push(p);save();return p}
+function collage(id,cls){const keys=plKeys(id),songs=keys.map(byKey).filter(Boolean);
+  const withCover=songs.filter(s=>coverURL(s));
+  if(!songs.length)return '<span class="col empty'+(cls?' '+cls:'')+'">'+(id==='fav'?'★':'♪')+'</span>';
+  if(withCover.length>=4)return '<span class="col grid'+(cls?' '+cls:'')+'">'+withCover.slice(0,4).map(s=>'<img src="'+coverURL(s)+'" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">').join('')+'</span>';
+  return '<span class="col one'+(cls?' '+cls:'')+'">'+artHTML(withCover[0]||songs[0],250)+'</span>'}
 
 /* ---------- главный экран ---------- */
 function filtered(){const q=norm($('q').value.trim());
-  let items=ALL.filter(s=>tab==='eve'?!!st.fav[idOf(s)]:tab==='mine'?(has(s)||s.custom):true);
+  let items;
+  if(tab==='eve')items=curPl?plKeys(curPl).map(byKey):[];
+  else items=ALL.filter(s=>tab==='mine'?(has(s)||s.custom):true);
   if(q)items=items.filter(s=>norm(s.s+' '+s.a+' '+(st.chords[idOf(s)]||'')).includes(q));
+  if(tab==='eve')return items;
   const col=(x,y)=>x.localeCompare(y,'ru',{sensitivity:'base'});
-  if(tab==='eve')items.sort((x,y)=>st.order.indexOf(idOf(x))-st.order.indexOf(idOf(y)));
-  else if(sort==='song')items.sort((x,y)=>col(x.s,y.s)||col(x.a,y.a));
+  if(sort==='song')items.sort((x,y)=>col(x.s,y.s)||col(x.a,y.a));
   else if(sort==='artist')items.sort((x,y)=>col(x.a,y.a)||col(x.s,y.s));
   else items.sort((x,y)=>x.id-y.id);
   return items}
@@ -407,20 +450,28 @@ function letterOf(s){const k=(sort==='artist'?s.a:s.s).replace(/^Misc\s+\w+/,'')
   let c=(k[0]||'#').toUpperCase().replace('Ё','Е');c=c.normalize('NFD')[0];
   return /[А-Я]/.test(c)?c:/[A-Z]/.test(c)?c:'#'}
 const LORDER=l=>/[А-Я]/.test(l)?0:/[A-Z]/.test(l)?1:2;
+function navFor(){const inPl=tab==='eve'&&!!curPl&&!!plGet(curPl),pl=inPl?plGet(curPl):null;
+  $('plBack').hidden=!inPl;
+  $('addBtn').hidden=false;$('addBtn').setAttribute('aria-label',tab==='eve'?(inPl?'Добавить песни':'Новый плейлист'):'Добавить песню');
+  $('moreBtn').hidden=tab==='eve';$('plMore').hidden=!inPl;$('histBtn').hidden=!(tab==='eve'&&!inPl);
+  $('editSet').hidden=!inPl||!plKeys(curPl).length;$('editSet').textContent=editSet?'Готово':'Править';
+  $('searchWrap').hidden=tab==='eve'&&!inPl;
+  const title=inPl?pl.name:TITLES[tab];$('bigTitle').textContent=$('navTitle').textContent=title;return inPl}
 function renderHome(){
   document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab));
-  $('bigTitle').textContent=$('navTitle').textContent=TITLES[tab];
-  $('addBtn').hidden=tab==='eve';$('moreBtn').hidden=tab==='eve';$('histBtn').hidden=tab!=='eve';
-  $('editSet').hidden=tab!=='eve'||!ALL.some(s=>st.fav[idOf(s)]);$('editSet').textContent=editSet?'Готово':'Править';
+  if(tab==='eve'&&curPl&&!plGet(curPl)){curPl=null;ls.set('pl','')}
+  const inPl=navFor();
+  if(tab==='eve'&&!inPl){renderPlaylists();return}
   const items=filtered();lastItems=items;
-  const total=tab==='all'?ALL.length:items.length;
+  const total=tab==='all'?ALL.length:inPl?plKeys(curPl).length:items.length;
   $('count').textContent=$('q').value.trim()?items.length+' из '+pl(total):pl(items.length);
-  $('eveActions').hidden=tab!=='eve'||!items.length||editSet;
+  $('eveActions').hidden=!inPl||!items.length||editSet;
   const L=$('list');L.innerHTML='';
+  $('plHeroBox').innerHTML=inPl&&!$('q').value.trim()?'<div class="plhero">'+collage(curPl,'big')+'</div>':'';
   if(!items.length){const msg=$('q').value.trim()?['Ничего не нашлось','Попробуй другое слово.']:
-      tab==='eve'?['Сетлист пуст','Смахни песню влево в списке или нажми ☆ внутри песни, и она появится здесь.']:
+      inPl?['Плейлист пуст','Нажми ＋ вверху и отметь песни. Или смахни песню влево в общем списке → «В плейлист».']:
       tab==='mine'?['Пока пусто','Здесь будут песни, к которым ты добавил свои аккорды, и песни, добавленные кнопкой ＋.']:['Песен пока нет','Нажми ＋ вверху и добавь первую.'];
-    L.innerHTML='<div class="empty"><b>'+msg[0]+'</b>'+msg[1]+'</div>';$('index').hidden=true;return}
+    L.insertAdjacentHTML('beforeend','<div class="empty"><b>'+msg[0]+'</b>'+msg[1]+'</div>');$('index').hidden=true;return}
   const grouped=tab!=='eve'&&sort!=='added'&&!$('q').value.trim();
   let grp=null;const letters=[];
   const frag=document.createDocumentFragment();
@@ -436,21 +487,61 @@ function renderHome(){
   const ix=$('index');ix.hidden=!grouped||letters.length<6;ix.innerHTML='';
   letters.forEach(l=>{const b=document.createElement('button');b.textContent=l;b.dataset.l=l;ix.append(b)});
 }
-function cellFor(s,i,n){const k=idOf(s),fav=!!st.fav[k];
+function renderPlaylists(){const L=$('list');L.innerHTML='';$('plHeroBox').innerHTML='';$('index').hidden=true;$('eveActions').hidden=true;lastItems=[];
+  const all=plList();$('count').textContent=all.length===1?'Создай первый плейлист кнопкой ＋':(all.length-1)+' '+(n=>n%10===1&&n%100!==11?'плейлист':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'плейлиста':'плейлистов')(all.length-1)+' и Избранное';
+  const g=document.createElement('div');g.className='group';g.style.marginTop='4px';
+  all.forEach(p=>{const n=plKeys(p.id).length;const b=document.createElement('button');b.className='plrow';
+    b.innerHTML=collage(p.id)+'<span class="txt"><div class="t"></div><div class="a">'+pl(n)+'</div></span><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>';
+    b.querySelector('.t').textContent=(p.fav?'★ ':'')+p.name;b.onclick=()=>{curPl=p.id;ls.set('pl',p.id);editSet=false;window.scrollTo(0,0);renderHome()};g.append(b)});
+  L.append(g);
+  const nb=document.createElement('button');nb.className='pill newpl';nb.innerHTML='＋ Новый плейлист';nb.onclick=newPlaylistFlow;L.append(nb)}
+function cellFor(s,i,n){const k=idOf(s),fav=!!st.fav[k],inPl=tab==='eve'&&!!curPl;
   const c=document.createElement('div');c.className='cell';
-  const act=document.createElement('button');act.className='act'+(fav?' rm':'');act.innerHTML=fav?'<span>☆</span>Убрать':'<span>★</span>В вечер';act.tabIndex=-1;
+  const act=document.createElement('button');act.className='act'+(inPl?' rm':'');act.innerHTML=inPl?'<span>⊖</span>Убрать':'<span>＋</span>В плейлист';act.tabIndex=-1;
   const fg=document.createElement('button');fg.className='fg';
-  const lead=tab==='eve'?'<span class="num">'+(i+1)+'</span>':artHTML(s,120);
-  const meta=tab==='eve'&&editSet?'<span class="reo"><button data-d="-1" aria-label="Выше"'+(i===0?' disabled':'')+'>▲</button><button data-d="1" aria-label="Ниже"'+(i===n-1?' disabled':'')+'>▼</button></span>':
-    '<span class="meta">'+(fav&&tab!=='eve'?'<span class="st">★</span>':'')+(has(s)?'<span class="nt">♪</span>':'')+'<svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>';
+  const lead=inPl?'<span class="num">'+(i+1)+'</span>':artHTML(s,120);
+  const meta=inPl&&editSet?'<span class="reo"><button data-d="-1" aria-label="Выше"'+(i===0?' disabled':'')+'>▲</button><button data-d="1" aria-label="Ниже"'+(i===n-1?' disabled':'')+'>▼</button><button data-rm="1" class="rmb" aria-label="Убрать из плейлиста">⊖</button></span>':
+    '<span class="meta">'+(fav&&!inPl?'<span class="st">★</span>':'')+(has(s)?'<span class="nt">♪</span>':'')+'<svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>';
   fg.innerHTML=lead+'<span class="txt"><div class="t"></div><div class="a"></div></span>'+meta;
   fg.querySelector('.t').textContent=s.s;fg.querySelector('.a').textContent=s.a+(s.custom?' · добавлена':'');
   c.append(act,fg);
-  fg.onclick=e=>{const r=e.target.closest('.reo button');if(r){e.stopPropagation();moveInSet(k,+r.dataset.d);return}
+  fg.onclick=e=>{const r=e.target.closest('.reo button');if(r){e.stopPropagation();if(r.dataset.rm){plToggle(curPl,k);renderHome();return}moveInSet(k,+r.dataset.d);return}
     if(c.classList.contains('opened')){closeSwipe(c);return}openSong(s)};
-  act.onclick=()=>{toggleFav(k);toast(st.fav[k]?'Добавлено в вечер':'Убрано из вечера');renderHome()};
+  act.onclick=()=>{if(inPl){plToggle(curPl,k);toast('Убрано из «'+plGet(curPl).name+'»');renderHome()}else{closeSwipe(c);openPicker(s)}};
   attachSwipe(c,fg);return c}
-function moveInSet(k,d){const i=st.order.indexOf(k),j=i+d;if(i<0||j<0||j>=st.order.length)return;[st.order[i],st.order[j]]=[st.order[j],st.order[i]];save();renderHome()}
+function moveInSet(k,d){const arr=plGet(curPl).songs,i=arr.indexOf(k),j=i+d;if(i<0||j<0||j>=arr.length)return;[arr[i],arr[j]]=[arr[j],arr[i]];save();renderHome()}
+
+/* выбор плейлистов для песни */
+function openPicker(s){const k=idOf(s);
+  const rows=()=>plList().map(p=>'<button class="pk" data-id="'+p.id+'">'+collage(p.id,'sm')+'<span class="txt"><div class="t">'+esc((p.fav?'★ ':'')+p.name)+'</div><div class="a">'+pl(plKeys(p.id).length)+'</div></span><span class="chk'+(plHas(p.id,k)?' on':'')+'">✓</span></button>').join('');
+  const sh=openSheet('<div class="shnav gut"><span></span><b>В плейлист</b><button class="r" id="pkDone">Готово</button></div><div class="shbody gut"><p class="note">«'+esc(s.s)+'» — отметь плейлисты:</p><div class="group" id="pkList">'+rows()+'</div><button class="pill" id="pkNew">＋ Новый плейлист</button></div>',{onClose:()=>{renderHome();if(cur)starSync()}});
+  const wire=()=>sh.querySelectorAll('.pk').forEach(b=>b.onclick=()=>{plToggle(b.dataset.id,k);$('pkList').innerHTML=rows();wire()});wire();
+  $('pkDone').onclick=closeSheet;
+  $('pkNew').onclick=()=>{closeSheet();setTimeout(()=>askName('Новый плейлист','',name=>{const p=plNew(name,[k]);toast('Создан «'+p.name+'» с этой песней');renderHome();if(cur)starSync()}),330)}}
+function askName(title,val,cb){openSheet('<div class="shnav gut"><button class="l" id="nmCancel">Отмена</button><b>'+esc(title)+'</b><button class="r" id="nmOk">Готово</button></div><div class="shbody gut"><div class="form"><input id="nmIn" placeholder="Название, например «У костра»" autocomplete="off"></div></div>');
+  $('nmIn').value=val;setTimeout(()=>$('nmIn').focus(),350);
+  const ok=()=>{const v=$('nmIn').value.trim();if(!v){toast('Введи название');return}closeSheet();cb(v)};
+  $('nmOk').onclick=ok;$('nmIn').onkeydown=e=>{if(e.key==='Enter')ok()};$('nmCancel').onclick=closeSheet}
+function newPlaylistFlow(){askName('Новый плейлист','',name=>{const p=plNew(name);curPl=p.id;ls.set('pl',p.id);renderHome();setTimeout(()=>addSongsPicker(p.id),350)})}
+/* добавить песни в открытый плейлист */
+function addSongsPicker(id){const p=plGet(id);
+  const sh=openSheet('<div class="shnav gut"><span></span><b>Песни в «'+esc(p.name)+'»</b><button class="r" id="asDone">Готово</button></div><div class="shbody gut"><div class="search" style="margin:0"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="asQ" type="search" placeholder="Найти песню" autocomplete="off"></div><div class="group" id="asList"></div></div>',{tall:true,onClose:renderHome});
+  const draw=()=>{const q=norm($('asQ').value.trim());const list=ALL.filter(s=>!q||norm(s.s+' '+s.a).includes(q)).slice(0,150);
+    $('asList').innerHTML=list.map(s=>'<button class="pk" data-k="'+esc(idOf(s))+'">'+artHTML(s,120)+'<span class="txt"><div class="t">'+esc(s.s)+'</div><div class="a">'+esc(s.a)+'</div></span><span class="chk'+(plHas(id,idOf(s))?' on':'')+'">✓</span></button>').join('')||'<div class="empty">Ничего не нашлось</div>';
+    $('asList').querySelectorAll('.pk').forEach(b=>b.onclick=()=>{plToggle(id,b.dataset.k);b.querySelector('.chk').classList.toggle('on',plHas(id,b.dataset.k))})};
+  $('asQ').oninput=draw;draw();$('asDone').onclick=closeSheet}
+/* меню плейлиста */
+function plMenu(){const p=plGet(curPl);if(!p)return;
+  if(p.fav){actionSheet('Избранное',[[{t:'Сохранить как плейлист',fn:()=>askName('Название плейлиста','Избранное '+new Date().toLocaleDateString('ru'),n=>{const np=plNew(n,plKeys('fav'));curPl=np.id;ls.set('pl',np.id);renderHome();toast('Сохранено')}),delay:320}],
+    [{t:'Очистить Избранное',cls:'danger',fn:()=>{st.fav={};syncOrder();save();renderHome();toast('Избранное очищено')}}]]);return}
+  const g=[[{t:'Переименовать',fn:()=>askName('Переименовать',p.name,n=>{p.name=n;save();renderHome()}),delay:320},
+    {t:'Дублировать',fn:()=>{const np=plNew(p.name+' (копия)',p.songs);curPl=np.id;ls.set('pl',np.id);renderHome();toast('Копия создана')}}]];
+  if(syncOn())g[0].push({t:'Отправить Давиду',fn:async()=>{const keys=plKeys(p.id);let ok=0;for(const k of keys){const s=byKey(k);try{const r=await fetch(sync.url.replace(/\/+$/,'')+'/api/'+sync.user+'/send',{method:'POST',headers:{Authorization:'Bearer '+sync.pw,'Content-Type':'application/json'},body:JSON.stringify({to:'david',song:songPayload(s)})});if(r.ok)ok++}catch(e){}}toast('Отправлено песен: '+ok)}});
+  g.push([{t:'Удалить плейлист',cls:'danger',fn:()=>actionSheet('Удалить «'+esc(p.name)+'»? Песни останутся в общем списке.',[[{t:'Удалить плейлист',cls:'danger',fn:()=>{st.pl=st.pl.filter(x=>x.id!==p.id);save();curPl=null;ls.set('pl','');renderHome();toast('Плейлист удалён')}}]]),delay:320}]);
+  actionSheet(esc(p.name),g)}
+$('plMore').onclick=plMenu;
+$('plBack').onclick=()=>{curPl=null;ls.set('pl','');editSet=false;window.scrollTo(0,0);renderHome()};
+$('shuffleEve').onclick=()=>{const a=lastItems.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}lastItems=a;if(a.length)openSong(a[0])};
 
 /* свайп строки влево */
 let openedCell=null;
@@ -461,7 +552,6 @@ function attachSwipe(c,fg){let x0=0,y0=0,dx=0,dir=0;
     if(!dir)dir=Math.abs(mx)>8&&Math.abs(mx)>Math.abs(my)?1:(Math.abs(my)>8?2:0);
     if(dir===1){const base=c.classList.contains('opened')?-96:0;dx=Math.min(0,Math.max(-130,base+mx));fg.style.transition='none';fg.style.transform='translateX('+dx+'px)'}},{passive:true});
   fg.addEventListener('touchend',()=>{if(dir!==1)return;fg.style.transition='';
-    if(dx<-150+60){/* глубокий свайп */}
     if(dx<-110){fg.style.transform='';c.classList.remove('opened');c.querySelector('.act').click();return}
     if(dx<-48){c.classList.add('opened');fg.style.transform='translateX(-96px)';openedCell=c}else closeSwipe(c)})}
 
@@ -471,6 +561,7 @@ $('qClr').onclick=()=>{$('q').value='';$('qClr').hidden=true;renderHome();$('q')
 addEventListener('scroll',()=>$('nav').classList.toggle('scrolled',scrollY>40),{passive:true});
 $('editSet').onclick=()=>{editSet=!editSet;renderHome()};
 $('startEve').onclick=()=>{if(lastItems.length)openSong(lastItems[0])};
+
 // алфавитный указатель: нажатие и проведение пальцем
 function jump(l){const h=$('sec-'+l);if(h)window.scrollTo({top:h.getBoundingClientRect().top+scrollY-44-(parseFloat(getComputedStyle(document.documentElement).paddingTop)||0)+1})}
 $('index').addEventListener('click',e=>{const b=e.target.closest('button');if(b)jump(b.dataset.l)});
@@ -501,7 +592,8 @@ $('moreBtn').onclick=()=>actionSheet('Сортировка',[
   [{t:'Тюнер',fn:openTuner,delay:320},{t:syncLabel(),fn:openSync,delay:320},{t:'Резервная копия',fn:openBackup,delay:320}]]);
 
 /* добавление песни */
-$('addBtn').onclick=()=>{const sh=openSheet('<div class="shnav gut"><button class="l" id="aCancel">Отмена</button><b>Новая песня</b><button class="r" id="aSave">Добавить</button></div>'+
+$('addBtn').onclick=()=>{if(tab==='eve'){if(curPl&&plGet(curPl))addSongsPicker(curPl);else newPlaylistFlow();return}openAddSong()};
+function openAddSong(){const sh=openSheet('<div class="shnav gut"><button class="l" id="aCancel">Отмена</button><b>Новая песня</b><button class="r" id="aSave">Добавить</button></div>'+
   '<div class="shbody gut"><div class="form"><input id="nA" placeholder="Исполнитель" autocomplete="off" list="artistList"><input id="nS" placeholder="Название" autocomplete="off"></div>'+
   '<div id="ncWrap" style="display:flex;flex-direction:column;gap:8px"><p class="flabel" style="margin-bottom:0">Текст с аккордами</p>'+PASTEBAR+'<textarea class="ta" id="nC" rows="9" placeholder="Am        F&#10;Белый снег, серый лёд…&#10;&#10;Можно оставить пустым и добавить позже"></textarea></div></div>'+
   '<datalist id="artistList">'+[...new Set(ALL.map(s=>s.a))].map(a=>'<option value="'+esc(a)+'">').join('')+'</datalist>',{tall:true});
@@ -522,7 +614,7 @@ function openBackup(){openSheet('<div class="shnav gut"><span></span><b>Резе
   $('expBtn').onclick=()=>{const txt=JSON.stringify({app:'pesennik-david',v:3,data:st});const fb=()=>{$('impText').value=txt;$('impText').select();toast('Выдели текст и скопируй')};
     try{navigator.clipboard.writeText(txt).then(()=>toast('Копия скопирована'),fb)}catch(e){fb()}};
   $('impBtn').onclick=()=>{try{const o=JSON.parse($('impText').value);const d=o.data||o;if(!d.fav&&!d.chords)throw 0;
-    st=Object.assign({fav:{},chords:{},tr:{},capo:{},simp:{},simpPrev:{},strum:{},bpm:{},custom:[],order:[],hist:[],fs:16},d);syncOrder();save();ALL=allSongs();closeSheet();renderHome();toast('Восстановлено')}
+    st=Object.assign({fav:{},chords:{},tr:{},capo:{},simp:{},simpPrev:{},strum:{},bpm:{},custom:[],pl:[],order:[],hist:[],fs:16},d);syncOrder();save();ALL=allSongs();closeSheet();renderHome();toast('Восстановлено')}
     catch(e){toast('Это не похоже на копию песенника')}}}
 
 /* ---------- аккорды: распознавание, транспонирование ---------- */
@@ -640,20 +732,20 @@ function openSong(s){if(!s)return;stopMet();if(blind)setBlind(false);cur=s;const
   $('sTitle').textContent=$('sNavTitle').textContent=s.s;$('sArtist').textContent=s.a;
   $('sArt').outerHTML=artHTML(s,500).replace('<span class="art"','<span class="art" id="sArt"');$('hero').style.setProperty('--aura','hsl('+h+' 75% 55%)');
   $('hero').style.setProperty('--cover',coverURL(s)?'url("'+coverURL(s)+'")':'none');logPlayed(s);
-  $('backLbl').textContent=TITLES[tab];
+  $('backLbl').textContent=tab==='eve'&&curPl&&plGet(curPl)?plGet(curPl).name:TITLES[tab];
   starSync();renderView();renderNext();hideDia();
   const p=$('song');p.classList.add('open');$('sBody').scrollTop=0;$('sNav').classList.remove('scrolled');document.body.style.overflow='hidden'}
-function starSync(){const on=!!st.fav[idOf(cur)];const b=$('sStar');b.querySelector('path').style.fill=on?'var(--star)':'none';b.querySelector('path').style.stroke=on?'var(--star)':'currentColor';b.setAttribute('aria-pressed',on)}
+function starSync(){const on=inAnyPl(idOf(cur));const b=$('sStar');b.querySelector('path').style.fill=on?'var(--star)':'none';b.querySelector('path').style.stroke=on?'var(--star)':'currentColor';b.setAttribute('aria-pressed',on)}
 function closeSong(){stopVoice();stopMet();setBlind(false);exitStage();stopScroll();hideDia();$('song').classList.remove('open');document.body.style.overflow='';cur=null;renderHome()}
 $('back').onclick=closeSong;
 $('sBody').addEventListener('scroll',()=>$('sNav').classList.toggle('scrolled',$('sBody').scrollTop>50),{passive:true});
-$('sStar').onclick=()=>{toggleFav(idOf(cur));starSync();toast(st.fav[idOf(cur)]?'Добавлено в вечер':'Убрано из вечера');renderNext()};
+$('sStar').onclick=()=>openPicker(cur);
 $('sMore').onclick=()=>{const s=cur,g=[[{t:has(s)?'Править аккорды':'Добавить аккорды',fn:openEditor,delay:320},{t:'Бой и темп',fn:openGroove,delay:320},{t:blind?'Показать аккорды':'Проверить себя',fn:()=>setBlind(!blind)},{t:'Отправить…',fn:()=>openSend(s),delay:320},{t:'Тюнер',fn:openTuner,delay:320}],linksOf(s)];
   if(has(s))g[0].splice(1,0,{t:ls.get('raw','0')==='1'?'Красивый вид':'Как вставлено',fn:()=>{ls.set('raw',ls.get('raw','0')==='1'?'0':'1');renderView()}});
   if(s.custom&&!s.c&&!s.cs)g[0].push({t:'Найти обложку',fn:async()=>{toast('Ищу обложку…');if(!syncOn()){toast('Нужна синхронизация с сервером');return}if(!(await fetchCover(s)))toast('Обложку не нашёл')}});
   if(s.custom)g.push([{t:'Удалить песню',cls:'danger',fn:()=>confirmDelete(s),delay:320}]);actionSheet(esc(s.s),g)};
 function confirmDelete(s){actionSheet('Удалить «'+esc(s.s)+'» вместе с аккордами?',[[{t:'Удалить песню',cls:'danger',fn:()=>{const k=idOf(s);
-  st.custom=st.custom.filter(c=>c.a+'|'+c.s!==k);['chords','tr','capo','fav'].forEach(x=>delete st[x][k]);syncOrder();save();ALL=allSongs();closeSong();toast('Песня удалена')}}]])}
+  st.custom=st.custom.filter(c=>c.a+'|'+c.s!==k);st.pl.forEach(p=>p.songs=p.songs.filter(x=>x!==k));['chords','tr','capo','fav'].forEach(x=>delete st[x][k]);syncOrder();save();ALL=allSongs();closeSong();toast('Песня удалена')}}]])}
 
 function renderView(){const k=idOf(cur),text=st.chords[k]||'',t=st.tr[k]||0,c=st.capo[k]||0,v=$('view');SIMP=!!st.simp[k];
   $('tVal').textContent=(t>0?'+':'')+t;$('cVal').textContent=c;
@@ -865,17 +957,17 @@ function stopTuner(){if(!tun)return;cancelAnimationFrame(tun.raf);tun.stream.get
 
 /* ---------- история вечеров ---------- */
 const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
-function logPlayed(s){if(tab!=='eve')return;const d=today(),k=idOf(s);let e=st.hist.find(x=>x.d===d);
-  if(!e){e={d,s:[]};st.hist.unshift(e);st.hist=st.hist.slice(0,100)}if(!e.s.includes(k)){e.s.push(k);save()}}
+function logPlayed(s){if(tab!=='eve'||!curPl||!plGet(curPl))return;const d=today(),k=idOf(s),pn=plGet(curPl).name;let e=st.hist.find(x=>x.d===d&&(x.pl||'')===pn);
+  if(!e){e={d,pl:pn,s:[]};st.hist.unshift(e);st.hist=st.hist.slice(0,100)}if(!e.s.includes(k)){e.s.push(k);save()}}
 function fmtDate(d){const [y,m,dd]=d.split('-').map(Number);return new Date(y,m-1,dd).toLocaleDateString('ru',{day:'numeric',month:'long',weekday:'long'})}
 function openHistory(){const h=st.hist||[];
-  const body=h.length?h.map((e,i)=>'<div class="hist"><div class="hh"><b>'+esc(fmtDate(e.d))+'</b><span>'+pl(e.s.length)+'</span></div><ol>'+
-    e.s.map(k=>{const s=ALL.find(x=>idOf(x)===k);return '<li>'+esc(s?s.s+' — '+s.a:k.replace('|',' — '))+'</li>'}).join('')+'</ol><button class="pill" data-rep="'+i+'">Повторить этот сетлист</button></div>').join('')
-    :'<p class="note">Здесь появятся вечера. Открой «Вечер» → «Начать вечер», и каждая сыгранная песня запишется сюда с датой.</p>';
+  const body=h.length?h.map((e,i)=>'<div class="hist"><div class="hh"><b>'+esc(fmtDate(e.d))+'</b><span>'+pl(e.s.length)+'</span></div>'+(e.pl?'<div class="note" style="margin:0">'+esc(e.pl)+'</div>':'')+'<ol>'+
+    e.s.map(k=>{const s=ALL.find(x=>idOf(x)===k);return '<li>'+esc(s?s.s+' — '+s.a:k.replace('|',' — '))+'</li>'}).join('')+'</ol><button class="pill" data-rep="'+i+'">Сохранить как плейлист</button></div>').join('')
+    :'<p class="note">Здесь появятся вечера. Открой плейлист → «Начать», и каждая сыгранная песня запишется сюда с датой.</p>';
   const sh=openSheet('<div class="shnav gut"><span></span><b>История вечеров</b><button class="r" id="hsDone">Готово</button></div><div class="shbody gut">'+body+'</div>',{tall:true});
   $('hsDone').onclick=closeSheet;
   sh.querySelectorAll('[data-rep]').forEach(b=>b.onclick=()=>{const e=h[+b.dataset.rep];const keys=e.s.filter(k=>ALL.some(x=>idOf(x)===k));
-    st.fav={};keys.forEach(k=>st.fav[k]=true);st.order=keys.slice();syncOrder();save();closeSheet();tab='eve';ls.set('tab',tab);renderHome();toast('Сетлист повторён: '+pl(keys.length))})}
+    const p=plNew((e.pl&&e.pl!=='Избранное'?e.pl:'Вечер')+' · '+new Date(e.d).toLocaleDateString('ru',{day:'numeric',month:'short'}),keys);closeSheet();tab='eve';ls.set('tab',tab);curPl=p.id;ls.set('pl',p.id);renderHome();toast('Плейлист создан: '+pl(keys.length))})}
 $('histBtn').onclick=openHistory;
 
 /* ---------- бой и метроном ---------- */
@@ -963,8 +1055,8 @@ const syncOn=()=>!!(sync&&sync.url&&sync.pw);
 async function api(method,body){const r=await fetch(sync.url.replace(/\/+$/,'')+'/api/'+encodeURIComponent(sync.user),
   {method,headers:{'Authorization':'Bearer '+sync.pw,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,cache:'no-store'});
   let j={};try{j=await r.json()}catch(e){}return{status:r.status,j}}
-function applyRemote(d,updated){st=Object.assign({fav:{},chords:{},tr:{},capo:{},simp:{},simpPrev:{},strum:{},bpm:{},custom:[],order:[],hist:[],fs:16},d);st.updated=updated;
-  ['fav','chords','tr','capo','simp','simpPrev','strum','bpm'].forEach(k=>{if(!st[k]||typeof st[k]!=='object')st[k]={}});if(!Array.isArray(st.custom))st.custom=[];if(!Array.isArray(st.order))st.order=[];if(!Array.isArray(st.hist))st.hist=[];
+function applyRemote(d,updated){st=Object.assign({fav:{},chords:{},tr:{},capo:{},simp:{},simpPrev:{},strum:{},bpm:{},custom:[],pl:[],order:[],hist:[],fs:16},d);st.updated=updated;
+  ['fav','chords','tr','capo','simp','simpPrev','strum','bpm'].forEach(k=>{if(!st[k]||typeof st[k]!=='object')st[k]={}});if(!Array.isArray(st.custom))st.custom=[];if(!Array.isArray(st.order))st.order=[];if(!Array.isArray(st.pl))st.pl=[];if(!Array.isArray(st.hist))st.hist=[];
   syncOrder();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}ALL=allSongs();renderHome();if(cur){const c=ALL.find(x=>idOf(x)===idOf(cur));if(c){cur=c;renderView();starSync();renderNext()}}}
 function mark(ok,msg){syncState={ok,at:Date.now(),msg:msg||''}}
 async function pull(){if(!syncOn()||pulling)return;pulling=true;
