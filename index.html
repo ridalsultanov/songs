@@ -627,7 +627,7 @@ function actionSheet(title,groups){
 /* меню «⋯» на главном */
 $('moreBtn').onclick=()=>actionSheet('Сортировка',[
   [['added','Недавно добавленные'],['song','По названию'],['artist','По исполнителю']].map(([v,t])=>({t,cls:'chk'+(sort===v?' on':''),fn:()=>{sort=v;ls.set('sort2',v);renderHome()}})),
-  [...(ls.get('sotdOff','0')==='1'?[{t:'Показывать «Песню дня»',fn:()=>{ls.set('sotdOff','0');renderHome()}}]:[]),{t:'Тюнер',fn:openTuner,delay:320},{t:syncLabel(),fn:openSync,delay:320},{t:'Резервная копия',fn:openBackup,delay:320}]]);
+  [...(ls.get('sotdOff','0')==='1'?[{t:'Показывать «Песню дня»',fn:()=>{ls.set('sotdOff','0');renderHome()}}]:[]),{t:'Тюнер',fn:openTuner,delay:320},{t:'Почистить все аккорды',fn:cleanAll},...(ls.get('cleanBak','{}')!=='{}'?[{t:'Вернуть до чистки',fn:undoCleanAll}]:[]),{t:syncLabel(),fn:openSync,delay:320},{t:'Резервная копия',fn:openBackup,delay:320}]]);
 
 /* добавление песни */
 $('addBtn').onclick=()=>{if(tab==='eve'){if(curPl&&plGet(curPl))addSongsPicker(curPl);else newPlaylistFlow();return}openAddSong()};
@@ -894,24 +894,65 @@ $('sBody').addEventListener('click',e=>{if(!$('song').classList.contains('stage'
   const b=$('sBody'),h=b.clientHeight*.8,up=e.clientY<innerHeight/3;b.scrollBy({top:up?-h:h,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})},true);
 
 /* ---------- умная вставка ---------- */
-const JUNK=/(https?:\/\/|www\.|mychords|akkords\.pro|amdm|ultimate-guitar|аккорды для гитары|подбор аккорд|транспонир|просмотр|комментари|реклам|скачать|поделиться|распечат|видеоразбор|смотреть видео|добавить в избранное|автор подбора|исполнитель:|^\s*источник)/i;
-function cleanChords(t){let n=0;
-  const lines=t.replace(/\r\n?/g,'\n').replace(/ /g,' ').replace(/\t/g,'    ').split('\n').map(l=>l.replace(/\s+$/,''));
-  const out=lines.filter(l=>{
-    if(JUNK.test(l)){n++;return false}
-    if(/^\s*[A-H][#b]?[^\s]{0,6}\s*[:=\-–]?\s*[x×0-9]{6}\s*$/i.test(l)){n++;return false}   // Am: x02210
-    if(/^\s*[*•=_~\-]{4,}\s*$/.test(l)){n++;return false}
+/* ---------- чистка вставленного текста ---------- */
+// строки-мусор с сайтов: интерфейс, соцсети, рейтинги, служебные подписи
+const JUNK=new RegExp('('+[
+ 'https?://','www\\.','\\.(ru|com|net|org|pro|su|info)\\b','mychords','akkords','amdm','ultimate-?guitar','gl5','muzland','guitarsolo','pesni\\.','genius',
+ 'аккорды для гитары','аккорды и текст','текст и аккорды','текст песни','аккорды песни','подбор аккорд','аппликатур','показать (все )?аккорд','скрыть аккорд',
+ 'транспонир','автопрокрут','размер шрифта','скорость прокрут','распечат','печать','скачать','слушать','mp3','видеоразбор','видеоурок','смотреть видео','youtube',
+ 'поделиться','вконтакте','одноклассник','telegram','whatsapp','viber','facebook','twitter','instagram',
+ 'в избранное','добавить в','подборк','нравится','лайк','пожаловаться','исправить (аккорды|текст)','сообщить об ошибке','войти','регистрац','авторизац',
+ 'комментари','оставить отзыв','отзыв','рейтинг','оценк','просмотр','голос(ов|а)?\\b','скопировать','копировать',
+ 'автор подбора','подобрал','прислал','добавлено','опубликован','обновлено','источник','все права','©','реклам','спонсор','cookie',
+ 'меню','главная','поиск по сайту','наверх','вернуться','назад к','следующая песня','предыдущая песня',
+ 'исполнитель:','альбом:','год:','слова:','музыка:','автор:','жанр:','сложность:'
+].join('|')+')','i');
+const FOOTER=/^\s*(похожие песни|другие песни|ещё песни|еще песни|популярные песни|смотрите также|рекомендуем|вам может понравиться|комментари|оставить комментарий|you may also like|related songs|more songs)/i;
+const KEEP=/(капо|capo|тональност|бой\b|бой:|перебор|ритм|темп|strum)/i;            // полезные подсказки не трогаем
+const TABLINE=/^\s*[eBGDAEbgdae]\s*[|:][-\d|hpbrsx\/\\~()^.\s]{4,}$/;                // табулатура
+const FINGER=/^\s*([A-H][#b]?[^\s:=]{0,7}\s*[:=\-–]?\s*\(?[x×\d]{6}\)?\s*)+$/i;      // Am: x02210, C x32010 G 320003
+const NOISE=/^\s*[\d\s.,:;/|*★☆♥❤👍👎✓✔•·\-–—_=~^%()+]+\s*$/;                       // числа, звёздочки, счётчики
+const ZW=/[​-‏⁠﻿­]/g;
+function cleanChords(t){const det={junk:0,tab:0,finger:0,noise:0,head:0,foot:0};
+  let L=t.replace(/\r\n?/g,'\n').replace(ZW,'').replace(/ /g,' ').replace(/\t/g,'    ').split('\n').map(l=>l.replace(/\s+$/,''));
+  const isMusic=l=>isChordLine(l)||/\[[A-H][^\]]*\]/.test(l)||SECT.test(l)||SECT_INLINE.test(l);
+  const first=L.findIndex(isMusic);
+  // подвал страницы: всё после «Похожие песни», «Комментарии»…
+  if(first>=0){const f=L.findIndex((l,i)=>i>first&&FOOTER.test(l));if(f>0){det.foot=L.slice(f).filter(x=>x.trim()).length;L=L.slice(0,f)}}
+  // шапка страницы: строки до первого аккорда или подписи части (кроме полезных подсказок)
+  if(first>0){const keep=[];L.slice(0,first).forEach(l=>{if(!l.trim())return;if(KEEP.test(l)&&l.length<80)keep.push(l);else det.head++});L=keep.concat(keep.length?['']:[],L.slice(first))}
+  L=L.filter(l=>{if(!l.trim())return true;
+    if(isChordLine(l)&&!FINGER.test(l))return true;
+    if(TABLINE.test(l)){det.tab++;return false}
+    if(FINGER.test(l)){det.finger++;return false}
+    if(KEEP.test(l)&&l.length<80)return true;
+    if(JUNK.test(l)){det.junk++;return false}
+    if(NOISE.test(l)){det.noise++;return false}
     return true});
-  const res=out.join('\n').replace(/\n{3,}/g,'\n\n').replace(/^\n+|\n+$/g,'');return{text:res,removed:n}}
+  const text=L.join('\n').replace(/\n{3,}/g,'\n\n').replace(/^\n+|\n+$/g,'');
+  const removed=Object.values(det).reduce((a,b)=>a+b,0);return{text,removed,det}}
+function cleanReport(det){const p=[];if(det.head)p.push('шапка '+det.head);if(det.foot)p.push('подвал '+det.foot);if(det.junk)p.push('мусор '+det.junk);
+  if(det.tab)p.push('табы '+det.tab);if(det.finger)p.push('аппликатуры '+det.finger);if(det.noise)p.push('цифры/значки '+det.noise);return p.join(', ')}
 function smartPaste(ta){ta.addEventListener('paste',e=>{const raw=(e.clipboardData||window.clipboardData)?.getData('text');if(!raw)return;
-  e.preventDefault();const {text,removed}=cleanChords(raw);const s=ta.selectionStart,en=ta.selectionEnd;
+  e.preventDefault();const prev=ta.value;const {text,removed,det}=cleanChords(raw);const s=ta.selectionStart,en=ta.selectionEnd;
   ta.value=ta.value.slice(0,s)+text+ta.value.slice(en);ta.selectionStart=ta.selectionEnd=s+text.length;
-  toast(removed?'Вставил и убрал лишнее: '+removed+' стр.':'Вставлено')})}
+  offerUndo(ta,prev.slice(0,s)+raw+prev.slice(en),removed);toast(removed?'Вставил, убрал строк: '+removed+' ('+cleanReport(det)+')':'Вставлено')})}
 async function pasteFromClipboard(ta){try{const raw=await navigator.clipboard.readText();if(!raw){toast('Буфер пуст');return}
-    const {text,removed}=cleanChords(raw);ta.value=ta.value.trim()?ta.value.replace(/\s*$/,'\n\n')+text:text;toast(removed?'Вставил и убрал лишнее: '+removed+' стр.':'Вставлено')}
+    const prev=ta.value,{text,removed,det}=cleanChords(raw);ta.value=ta.value.trim()?ta.value.replace(/\s*$/,'\n\n')+text:text;
+    offerUndo(ta,prev.trim()?prev.replace(/\s*$/,'\n\n')+raw:raw,removed);toast(removed?'Вставил, убрал строк: '+removed+' ('+cleanReport(det)+')':'Вставлено')}
   catch(e){ta.focus();toast('Нажми в поле и выбери «Вставить»')}}
-function cleanCurrent(ta){const {text,removed}=cleanChords(ta.value);ta.value=text;toast(removed?'Убрал лишних строк: '+removed:'Уже чисто')}
-const PASTEBAR='<div class="pastebar"><button class="pill" type="button" data-paste>Вставить из буфера</button><button class="pill" type="button" data-clean>Почистить</button></div>';
+function cleanCurrent(ta){const prev=ta.value,{text,removed,det}=cleanChords(ta.value);ta.value=text;offerUndo(ta,prev,removed);
+  toast(removed?'Убрал строк: '+removed+' ('+cleanReport(det)+')':'Мусора не нашёл. Пришли пример — научу чистить и его')}
+function offerUndo(ta,prev,removed){const bar=ta.parentElement.querySelector('[data-undo]');if(!bar)return;bar.hidden=!removed;
+  bar.onclick=()=>{ta.value=prev;bar.hidden=true;toast('Вернул как было')};clearTimeout(offerUndo.t);offerUndo.t=setTimeout(()=>{bar.hidden=true},20000)}
+
+function cleanAll(){const bak={};let songs=0,lines=0;
+  Object.keys(st.chords).forEach(k=>{const {text,removed}=cleanChords(st.chords[k]);if(removed&&text.trim()){bak[k]=st.chords[k];st.chords[k]=text;songs++;lines+=removed}});
+  if(!songs){toast('Мусора в сохранённых аккордах не нашёл');return}
+  ls.set('cleanBak',JSON.stringify(bak));save();renderHome();toast('Почистил песен: '+songs+', строк убрал: '+lines+'. Вернуть: ⋯ → «Вернуть до чистки»')}
+function undoCleanAll(){let bak={};try{bak=JSON.parse(ls.get('cleanBak','{}'))}catch(e){}const ks=Object.keys(bak);if(!ks.length)return;
+  ks.forEach(k=>st.chords[k]=bak[k]);ls.set('cleanBak','{}');save();renderHome();toast('Вернул как было: '+ks.length+' песен')}
+const PASTEBAR='<div class="pastebar"><button class="pill" type="button" data-paste>Вставить из буфера</button><button class="pill" type="button" data-clean>Почистить</button><button class="pill" type="button" data-undo hidden>Вернуть</button></div>';
 function wirePaste(root,ta){smartPaste(ta);root.querySelector('[data-paste]').onclick=()=>pasteFromClipboard(ta);root.querySelector('[data-clean]').onclick=()=>cleanCurrent(ta)}
 
 /* ---------- отправка песни ---------- */
