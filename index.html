@@ -107,6 +107,28 @@ textarea.edit{width:100%;min-height:50vh;border:1px solid var(--line);border-rad
 .modal textarea{width:100%;height:120px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:10px;font-family:var(--f-mono);font-size:12px}
 .modal .row2{display:flex;flex-wrap:wrap;gap:8px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;z-index:80;font-size:.9rem}
+
+.add-btn{font-weight:700}
+.reo{display:flex;flex-direction:column;gap:2px}
+.reo button{border:0;background:var(--chip);border-radius:6px;width:30px;height:22px;font-size:.7rem;line-height:1}
+.row.with-reo{grid-template-columns:auto 1fr auto}
+.setnote{font-size:.8rem;color:var(--muted);padding:8px 0 0}
+.songnav{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.songnav .btn:last-child{justify-self:end}
+.songnav span{font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.capo-note{font-size:.82rem;color:var(--muted)}
+.capo-note b{color:var(--chord)}
+pre.chords .c{cursor:pointer;border-radius:4px}
+pre.chords .c:active{background:var(--chip)}
+.dia{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:70;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 16px 10px;box-shadow:0 10px 30px rgba(0,0,0,.25);text-align:center;width:min(240px,calc(100vw - 32px))}
+.dia b{font-family:var(--f-mono);font-size:1.1rem;color:var(--chord)}
+.dia small{display:block;color:var(--muted);font-size:.75rem;margin-top:2px}
+.dia svg{display:block;margin:6px auto 0;width:150px;height:auto}
+.dia svg .ln{stroke:var(--muted)} .dia svg .nut{stroke:var(--fg)} .dia svg .dt{fill:var(--fg)} .dia svg .tx{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.modal .field{display:flex;flex-direction:column;gap:4px;font-size:.8rem;font-weight:600;color:var(--muted)}
+.modal input[type=text],.modal input[type=url]{height:42px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--fg);padding:0 12px;font-size:15px;font-weight:500}
+.btn.danger{color:#C0392B;border-color:currentColor}
+.confirm{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:.9rem}
 @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto!important}}
 </style>
 </head>
@@ -117,7 +139,7 @@ textarea.edit{width:100%;min-height:50vh;border:1px solid var(--line);border-rad
   <div class="wrap">
     <div class="brand">
       <h1>Мой песенник<small id="count"></small></h1>
-      <button class="icon-btn" id="backupBtn" aria-label="Резервная копия">⇅ Копия</button>
+      <div style="display:flex;gap:6px"><button class="icon-btn add-btn" id="addBtn" aria-label="Добавить песню">＋ Песня</button><button class="icon-btn" id="backupBtn" aria-label="Резервная копия">⇅ Копия</button></div>
     </div>
     <div class="search">
       <input id="q" type="search" placeholder="Поиск" autocomplete="off" aria-label="Поиск">
@@ -136,7 +158,7 @@ textarea.edit{width:100%;min-height:50vh;border:1px solid var(--line);border-rad
     </label>
   </div>
 </header>
-<main><div class="wrap"><ul class="list" id="list"></ul><div class="empty" id="empty" hidden>Ничего не нашлось</div></div></main>
+<main><div class="wrap"><div class="setnote" id="setnote" hidden>Это твой сетлист на вечер. Порядок меняй стрелками, открой первую песню и листай свайпом влево.</div><ul class="list" id="list"></ul><div class="empty" id="empty" hidden>Ничего не нашлось</div></div></main>
 
 <section class="sheet" id="sheet" hidden aria-modal="true" role="dialog">
   <div class="sheet-head"><div class="wrap">
@@ -150,14 +172,19 @@ textarea.edit{width:100%;min-height:50vh;border:1px solid var(--line);border-rad
       <p class="label">Мои аккорды</p>
       <div class="toolbar" id="tools">
         <div class="group" aria-label="Тональность"><button id="tDown" aria-label="Ниже на полтона">−</button><output id="tVal">0</output><button id="tUp" aria-label="Выше на полтона">+</button></div>
+        <div class="group" aria-label="Каподастр"><button id="cDown" aria-label="Каподастр ниже">−</button><output id="cVal">капо 0</output><button id="cUp" aria-label="Каподастр выше">+</button></div>
         <div class="group" aria-label="Размер шрифта"><button id="fDown" aria-label="Мельче">A−</button><button id="fUp" aria-label="Крупнее">A+</button></div>
         <button class="btn primary" id="playBtn">▶ Прокрутка</button>
         <button class="btn" id="editBtn">Изменить</button>
       </div>
     </div>
+    <div class="capo-note" id="capoNote" hidden></div>
     <div id="view"></div>
+    <div class="songnav" id="songnav"><button class="btn" id="prevBtn">‹ Пред.</button><span id="navPos"></span><button class="btn" id="nextBtn">След. ›</button></div>
+    <div id="delWrap" hidden><button class="btn danger" id="delBtn">Удалить песню</button></div>
   </div></div>
 </section>
+<div class="dia" id="dia" hidden></div>
 
 <div class="scrollbar" id="scrollbar" hidden><div class="wrap">
   <button class="btn primary" id="pauseBtn">❚❚</button>
@@ -172,110 +199,219 @@ textarea.edit{width:100%;min-height:50vh;border:1px solid var(--line);border-rad
   <textarea id="impText" placeholder="Или вставь сюда скопированную копию"></textarea>
   <div class="row2"><button class="btn" id="impBtn">Восстановить из текста</button><button class="btn" id="closeModal">Закрыть</button></div>
 </div></div>
+<div class="modal" id="addModal" hidden><form class="box" id="addForm">
+  <h2>Новая песня</h2>
+  <label class="field" for="nA">Исполнитель<input type="text" id="nA" required autocomplete="off" list="artistList"></label>
+  <label class="field" for="nS">Название<input type="text" id="nS" required autocomplete="off"></label>
+  <label class="field" for="nU">Ссылка на аккорды (необязательно)<input type="text" inputmode="url" autocapitalize="off" id="nU" placeholder="mychords.net/…" autocomplete="off"></label>
+  <div class="row2"><button class="btn primary" type="submit">Добавить</button><button class="btn" type="button" id="addCancel">Отмена</button></div>
+</form></div>
+<datalist id="artistList"></datalist>
 <div class="toast" id="toast" hidden></div>
 
 <script>
 const SONGS = [{"a":"Чайф","s":"Аргентина - Ямайка 5-0","m":"chaif/7580-chajf-argentina-yamajka-50.html","k":"chaif/argentina-yamayka-5-0/"},{"a":"Батыр Шукенов","s":"В Серых Каплях Дождя"},{"a":"Пикник","s":"Иероглиф","m":"picnic/16464-piknik-ieroglif.html"},{"a":"Çelik","s":"Hercai"},{"a":"Браво","s":"Верю Я","m":"bravo/215963-bravo-veryu-ya.html"},{"a":"Браво","s":"Как Жаль","m":"bravo/5974-bravo-kak-zhal-chto-ty-segodnya-ne-so-mnoj.html","k":"bravo/kak-zhal/"},{"a":"Кипелов","s":"Я Свободен","m":"kipelov/266-ariya-ya-svoboden.html","k":"kipelov/ja-svoboden/"},{"a":"Rihanna","s":"Stay","m":"rihanna/63266-rihanna-stay.html"},{"a":"Red Hot Chili Peppers","s":"Snow Hey Oh","m":"redhotchilipeppers/65883-red-hot-chili-peppers-snow.html"},{"a":"Chris Isaak","s":"Wicked Game","m":"chrisisaak/135800-chris-isaak-wicked-game.html","k":"chris-isaak/wicked-game/"},{"a":"İlyas Yalçıntaş","s":"İçimdeki Duman"},{"a":"Aerosmith","s":"Dream On","m":"aerosmith/5554-aerosmith-dream-on.html"},{"a":"Би-2","s":"Бумажный Змей"},{"a":"Mark Ronson","s":"Nothing Breaks Like A Heart","m":"mark-ronson/112131-mark-ronson-miley-cyrus-nothing-breaks-like-a.html"},{"a":"Paolo Nutini","s":"Diana"},{"a":"The Beatles","s":"The Long And Winding Road","m":"beatles/3213-the-beatles-the-long-and-winding-road.html"},{"a":"Israel Kamakawiwoʻole","s":"Over The Rainbow","m":"israel-kamakawiwo-ole/233849-israel-kamakawiwoole-over-the-rainbow-ukulele.html"},{"a":"Агата Кристи","s":"Как На Войне","m":"agata_kristi/245428-agata-kristi-kak-na-voyne.html","k":"agata-kristi/kak-na-vojne/"},{"a":"John Lennon","s":"Imagine","m":"lennonjohn/11177-lennon-john-imagine-2-variant.html"},{"a":"LP","s":"Lost On You","m":"lp/86913-lp-lost-on-you.html"},{"a":"Teddy Swims","s":"The Door","m":"teddy-swims/208981-teddy-swims-the-door.html"},{"a":"Агата Кристи","s":"Вольно","m":"agata_kristi/242755-agata-kristi-volno.html"},{"a":"Агата Кристи","s":"Сказочная Тайга","m":"agata_kristi/275698-agata-kristi-skazochnaya-tayga.html","k":"agata-kristi/skazochnaya-tayga/"},{"a":"Николай Носков","s":"А На Меньшее Я Не Согласен","m":"noskov/41866-nikolaj-noskov-a-na-menshee-ya-ne-soglasen.html"},{"a":"Scorpions","s":"Daddys Girl","m":"scorpions/79170-scorpions-daddys-girl.html"},{"a":"Игорь Николаев","s":"Малиновое Вино","m":"nikolaev_i/36872-igor-nikolaev-malinovoe-vino.html"},{"a":"Sevara Nazarkhan (Севара Назархан)","s":"Там Нет Меня","m":"sevara/84689-nazarxan-sevara-tam-net-menya.html","k":"sevara-nazarhan/tam-net-menya/"},{"a":"Михаил Круг","s":"Владимирский Централ","m":"krug/17590-mixail-krug-vladimirskij-central.html","k":"mihail-krug/vladimirskiy-tsentral/"},{"a":"Любэ","s":"Ты Неси Меня Река","m":"lyube/1938-lyubye-ty-nesi-menya-reka.html","k":"ljubje/ty-nesi-menya-reka/"},{"a":"ДДТ","s":"Дороги","m":"ddt/263974-ddt-dorogi.html"},{"a":"Король и Шут","s":"Кукла Колдуна","m":"kish/277452-korol-i-shut-kukla-kolduna.html","k":"korol-i-shut/kukla-kolduna/"},{"a":"Пикник","s":"Кукла С Человеческим Лицом","m":"picnic/63579-piknik-kukla-s-chelovecheskim-licom.html"},{"a":"Пикник","s":"Королевство Кривых","m":"picnic/16483-piknik-korolevstvo-krivyx.html","k":"piknik/korolevstvo-krivyh/"},{"a":"Пикник","s":"У Шамана Три Руки","m":"picnic/272789-piknik-u-shamana-tri-ruki.html","k":"piknik/u-shamana-tri-ruki/"},{"a":"Браво","s":"Черный Кот","m":"bravo/6016-bravo-chernyj-kot.html","k":"bravo/chyornyy-kot/"},{"a":"Игорь Николаев","s":"Мастер И Маргарита"},{"a":"Simge","s":"Sevda Koydum Adını"},{"a":"Би-2","s":"Серебро","m":"bi-2/1333-bi-2-serebro.html","k":"bi-2/serebro/"},{"a":"Владимир Кузьмин","s":"Я Не Забуду Тебя"},{"a":"Альянс","s":"На Заре","m":"alians/27528-alyans-na-zare.html","k":"alyans/na-zare/"},{"a":"Simon & Garfunkel","s":"The Sound Of Silence","m":"simon_garfunkel/87075-simon-and-garfunkel-the-sound-of-silence.html"},{"a":"Авраам Руссо","s":"Далеко-Далеко","m":"russo_a/25579-avraam-russo-daleko-daleko.html"},{"a":"Носков Николай","s":"Исповедь"},{"a":"Браво","s":"Страна Цветов","m":"bravo/6011-bravo-strana-cvetov.html"},{"a":"Браво","s":"Старый Отель","m":"bravo/6010-bravo-staryj-otel.html"},{"a":"Браво","s":"Любовь Не Горит","m":"bravo/5987-bravo-lyubov-ne-gorit.html"},{"a":"Кино","s":"Спокойная Ночь","m":"kino/271660-kino-spokoynaya-noch.html","k":"kino/spokojnaya-noch/"},{"a":"Grace Jones","s":"Ive Seen That Face Before Libertango","m":"grace-jones/118782-grace-jones-ive-seen-that-face-before-libertango.html"},{"a":"Александр Серов","s":"Как Быть","m":"serov_a/216130-aleksandr-serov-kak-byt.html"},{"a":"Пикник","s":"Египтянин","m":"picnic/16454-piknik-egiptyanin.html","k":"piknik/egiptyanin/"},{"a":"Adele","s":"When We Were Young","m":"adele/78896-adele-when-we-were-young.html"},{"a":"Ray Charles","s":"I Got A Woman","m":"charles_ray/69079-charles-ray-i-got-a-woman.html"},{"a":"Ray Charles","s":"Hit The Road Jack","m":"charles_ray/68805-akkordy-ray-charles-hit-the-road-jack.html"},{"a":"Алла Пугачёва","s":"Опять Метель","m":"orbakayte_k/25099-alla-pugacheva-i-kristina-orbakajte-opyat-metel.html","k":"alla-pugachyova/opyat-metel/"},{"a":"Frank Sinatra","s":"Fly Me To The Moon","m":"sinatra/69082-sinatra-frank-fly-me-to-the-moon.html","k":"frank-sinatra/fly-me-to-the-moon/"},{"a":"Misc Soundtrack","s":"Приключения Буратино- Песня Пьеро"},{"a":"Валерий Меладзе","s":"Небеса","m":"meladze/73924-meladze-valerij-nebesa.html"},{"a":"гречка","s":"Люби Меня Люби","m":"grechka/101638-grechka-lyubi-menya-lyubi.html","k":"grechka/ljubi-menja-ljubi/"},{"a":"Gorky Park","s":"Stranger"},{"a":"Jennifer Hudson","s":"One Night Only"},{"a":"A'Studio","s":"Джулия","m":"a-studio/16-a-studio-dzhuliya-akkordy.html"},{"a":"Grover Washington Jr.","s":"Just The Two Of Us","m":"grover-washington-jr./140400-grover-washington-jr-just-the-two-of-us.html"},{"a":"Леонид Агутин","s":"Хоп Хей Лала Лей","m":"agutin/18981-agutin-xop-xej-lala-lej.html"},{"a":"Леонид Агутин","s":"Как Не Думать О Тебе","m":"agutin/76694-agutin-leonid-kak-ne-dumat-o-tebe.html"},{"a":"Пелагея","s":"Не Для Тебя","m":"pelageya/25122-pelageya-ne-dlya-tebya.html"},{"a":"Misc Traditional","s":"Ой То Не Вечер","m":"baba_yaga/240296-baba-yaga-oy-to-ne-vecher.html","k":"narodnye/oy-to-ne-vecher/"},{"a":"Татьяна Анциферова","s":"Ищу Тебя","m":"anstyferova/24645-t-anciferova-ishhu-tebya-ost-31-iyunya.html"},{"a":"Леонид Агутин","s":"Летний Дождь","m":"agutin/80560-agutin-leonid-letnij-dozhd.html"},{"a":"Tracy Chapman","s":"Telling Stories"},{"a":"Darren Hayes","s":"Insatiable","m":"darren-hayes/106612-darren-hayes-insatiable.html"},{"a":"The Beatles","s":"While My Guitar Gently Weeps","m":"beatles/3227-the-beatles-while-my-guitar-gently-weeps.html"},{"a":"Harry Styles","s":"Watermelon Sugar","m":"harry-styles/122681-harry-styles-watermelon-sugar.html"},{"a":"Engelbert Humperdinck","s":"A Time For Us"},{"a":"Gipsy Kings","s":"Volare","m":"gipsy_kings/169236-gipsy-kings-volare.html"},{"a":"Elton John","s":"Your Song","m":"eltonjohn/9741-elton-john-your-song.html"},{"a":"Donny Hathaway","s":"A Song For You","m":"donny-hathaway/137327-donny-hathaway-a-song-for-you.html"},{"a":"Bob Marley","s":"Redemption Song","m":"marleybob/11253-marley-bob-redemption-song.html"},{"a":"Carpenters","s":"Close To You","m":"carpenters/32119-carpenters-close-to-you.html"},{"a":"Bill Withers","s":"Aint No Sunshine","m":"withers-bill/69151-withers-bill-aint-no-sunshine.html"},{"a":"Bertie Higgins","s":"Casablanca","m":"bertie-higgins/127543-bertie-higgins-casablanca.html"},{"a":"Audrey Hepburn","s":"Moon River","m":"audrey-hepburn/109554-audrey-hepburn-moon-river.html"},{"a":"Bee Gees","s":"To Love Somebody"},{"a":"Кино","s":"Музыка Волн","m":"kino/257418-kino-muzyka-voln.html","k":"kino/muzyka-voln/"},{"a":"Кино","s":"Лето","m":"kino/173772-kino-leto.html"},{"a":"Банд'Эрос","s":"Не Под Этим Солнцем","m":"banderos/24667-bandyeros-ne-pod-yetim-solncem.html"},{"a":"Ислам Идигов","s":"В Сигаретном Дыму","m":"islam-idigov/167656-islam-idigov-v-sigaretnom-dymu.html"},{"a":"Алла Пугачёва","s":"Расскажите Птицы"},{"a":"Леонид Агутин","s":"Февраль","m":"agutin/81878-agutin-leonid-fevral.html"},{"a":"Леонид Агутин","s":"Ты Вернешься Когда-Нибудь Снова","m":"agutin/66061-agutin-leonid-ty-verneshsya-kogda-nibud-snova.html"},{"a":"Леонид Агутин","s":"Босоногий Мальчик","m":"agutin/81871-agutin-leonid-bosonogij-malchik.html"},{"a":"Леонид Агутин","s":"На Сиреневой Луне","m":"agutin/82853-agutin-leonid-na-sirenevoj-lune.html","k":"leonid-agutin/na-sirenevoy-lune/"},{"a":"Леонид Агутин","s":"Королева","m":"agutin/64137-agutin-leonid-koroleva.html"},{"a":"Hi-Fi","s":"Седьмой Лепесток","m":"hifi/41006-hi-fi-sedmoj-lepestok.html","k":"hi-fi/sedmoy-lepestok/"},{"a":"Hi-Fi","s":"А Мы Любили","m":"hifi/77450-hi-fi-a-my-lyubili.html"},{"a":"Ария","s":"Беспечный Ангел","m":"aria/70-ariya-bespechnyj-angel.html","k":"arija/bespechnyj-angel/"},{"a":"Ария","s":"Штиль","m":"aria/11-shtil.html","k":"arija/shtil/"},{"a":"Филипп Киркоров","s":"Немного Жаль","m":"kirkorov/24430-kirkorov-filipp-nemnogo-zhal.html"},{"a":"Nautilus Pompilius","s":"Крылья","m":"nautilus/281374-nautilus-pompilius-krylya.html","k":"nautilus-pompilius/krylya/"},{"a":"John Denver","s":"Take Me Home Country Roads","m":"denver_john/35495-denver-john-take-me-home-country-roads.html"},{"a":"Dolly Parton","s":"Jolene","m":"dolly-parton/135808-dolly-parton-jolene.html"},{"a":"Misc Soundtrack","s":"Жестокий Романс - Любовь - Волшебная Страна","m":"ponomareva_v/82851-ponomareva-valentina-lyubov-volshebnaya-strana-iz.html"},{"a":"Филипп Киркоров","s":"Жестокая Любовь","m":"kirkorov/24428-kirkorov-filipp-zhestokaya-lyubov.html"},{"a":"Валерий Леонтьев","s":"Исчезли Солнечные Дни","m":"leontyev_v/24957-valerij-leontev-ischezli-solnechnye-dni.html"},{"a":"Anna German (Анна Герман)","s":"Эхо Любви","m":"german_n/27825-anna-german-yexo-lyubvi.html","k":"anna-german/eho-lyubvi/"},{"a":"Anna German (Анна Герман)","s":"Нежность","m":"german_n/117317-anna-german-nezhnost-opustela-bez-tebya-zemlya.html","k":"anna-german/nezhnost/"},{"a":"Anna German (Анна Герман)","s":"Город Влюбленных Людей","m":"german_n/94664-german-anna-gorod-vlblenny-lde.html"},{"a":"Валерий Меладзе","s":"Сэра","m":"meladze/21125-meladze-valerij-syejra.html"},{"a":"Валерий Меладзе","s":"Вера","m":"meladze/94775-meladze-valerij-vera.html"},{"a":"Александр Градский","s":"Как Молоды Мы Были","m":"gradskiy/11358-gradskij-aleksandr-kak-molody-my-byli.html","k":"aleksandr-gradskiy/kak-molody-my-byli/"},{"a":"Mika","s":"Relax Take It Easy","m":"mika/81653-mika-relax-take-it-easy.html"},{"a":"Женя Трофимов","s":"Привет","m":"komnata-kultury/237007-zhenya-trofimov-komnata-kultury-privet.html"},{"a":"Misc Soundtrack","s":"A Star Is Born - Shallow","m":"gaga/110028-lady-gaga-shallow.html"},{"a":"The Cranberries","s":"Zombie","m":"cranberries/69717-the-cranberries-zombie.html","k":"the-cranberries/zombie/"},{"a":"Ed Sheeran","s":"Perfect","m":"ed_sheeran/91609-ed-sheeran-perfect.html","k":"ed-sheeran/perfect/"},{"a":"Radiohead","s":"Creep","m":"radiohead/12029-radiohead-creep.html","k":"radiohead/creep/"},{"a":"Ефрем Амирамов","s":"Молодая","m":"amiramov_e/63836-amiramov-efrem-molodaya.html","k":"efrem-amiramov/molodaya/"},{"a":"Black (UK)","s":"Wonderful Life","m":"black/92587-black-wonderful-life.html"},{"a":"Ялла","s":"Учкудук","m":"yalla/82620-lla-uchkuduk.html"},{"a":"Сергей Никитин","s":"Я Спросил У Ясеня","m":"nikitin/19751-pesni-iz-filmov-multfilmov-ironiya-sudby-ya.html","k":"sergey-nikitin/ya-sprosil-u-yasenya/"},{"a":"Король и Шут","s":"Прыгну Со Скалы","m":"kish/906-korol-i-shut-prygnu-so-skaly.html","k":"korol-i-shut/prygnu-so-skaly/"},{"a":"Jeff Buckley","s":"Hallelujah","m":"buckley_jeff/86238-jeff-buckley-hallelujah-hallelujahc-dnem.html"},{"a":"Технология","s":"Странные Танцы","m":"tehnologia/266990-tekhnologiya-strannyye-tantsy.html","k":"tehnologiya/strannye-tantsy/"},{"a":"Scorpions","s":"Wind Of Change","m":"scorpions/6753-scorpions-wind-of-change.html","k":"scorpions/wind-of-change/"},{"a":"Scorpions","s":"Still Loving You","m":"scorpions/6745-scorpions-still-loving-you.html","k":"scorpions/still-loving-you/"},{"a":"Юрий Лоза","s":"Плот","m":"loza/20964-loza-yurij-plot.html","k":"yuriy-loza/plot/"},{"a":"Юрий Лоза","s":"Я Умею Мечтать","m":"loza/20943-loza-yurij-ya-umeyu-mechtat.html"},{"a":"Юрий Антонов","s":"Нет Тебя Прекрасней","m":"antonov/81961-antonov-rij-net-tebya-prekrasnej.html","k":"yuriy-antonov/net-tebya-prekrasney/"},{"a":"Александр Маршал","s":"Белый Пепел","m":"marshal/19053-marshal-aleksandr-belyj-pepel.html"},{"a":"Николай Носков","s":"Паранойя","m":"noskov/25080-n-noskov-paranojya.html"},{"a":"The Beatles","s":"A Hard Days Night","m":"beatles/3042-the-beatles-a-hard-days-night.html"},{"a":"The Beatles","s":"And I Love Her","m":"beatles/3050-the-beatles-and-i-love-her.html"},{"a":"Цветы (Группа Стаса Намина)","s":"Звездочка Моя Ясная","m":"cvety/149553-cvety-namin-stas-zvezdoka-mo-sna.html","k":"tsvety/zvyozdochka-moya-yasnaya/"},{"a":"Алла Пугачёва","s":"На Тихорецкую","m":"pugacheva/19737-pesni-iz-filmov-multfilmov-na-tixoreckuyu.html"},{"a":"Nancy Ajram","s":"Inta Eyh"},{"a":"Сплин","s":"Романс","m":"splin/3452-splin-romans.html","k":"splin/romans/"},{"a":"The Beatles","s":"Yesterday","m":"beatles/3233-the-beatles-yesterday.html","k":"the-beatles/yesterday/"},{"a":"Eagles","s":"Hotel California","m":"eagles/9440-eagles-hotel-california.html","k":"eagles/hotel-california/"},{"a":"Владимир Кузьмин","s":"Когда Меня Ты Позовешь","m":"kuzmin/15129-kuzmin-vladimir-kogda-menya-ty-pozovyosh.html"},{"a":"Александр Розенбаум","s":"Ау","m":"rozenbaum/16618-rozenbaum-aleksandr-au.html","k":"aleksandr-rozenbaum/au-2/"},{"a":"Александр Розенбаум","s":"Вальс Бостон","m":"rozenbaum/16638-rozenbaum-aleksandr-vals-boston.html","k":"aleksandr-rozenbaum/vals-boston/"},{"a":"The Mamas & The Papas","s":"San Francisco"},{"a":"Алла Пугачёва","s":"Не Отрекаются Любя","m":"pugacheva/21324-pugacheva-alla-ne-otrekayutsya-lyubya.html"},{"a":"Николай Носков","s":"Я Люблю Тебя Это Здорово","m":"noskov/74908-noskov-nikolaj-ya-lyublyu-tebya-yeto-zdorovo.html","k":"nikolay-noskov/eto-zdorovo/"},{"a":"Николай Носков","s":"Зимняя Ночь","m":"noskov/11684-noskov-nikolaj-zimnyaya-noch.html"},{"a":"Николай Носков","s":"Романс","m":"noskov/16329-noskov-nikolaj-romans.html","k":"nikolay-noskov/romans-3/"},{"a":"Синяя Птица","s":"Клён Там Где Клён Шумит","m":"sin_ptitsa/21413-sinyaya-ptica-klen.html","k":"sinjaja-ptica/kljon/"},{"a":"Алла Пугачёва","s":"Позови Меня С Собой","m":"pugacheva/84990-pugacheva-alla-pozovi-menya-s-soboj.html","k":"alla-pugachyova/pozovi-menya-s-soboy/"},{"a":"Nautilus Pompilius","s":"Прогулки По Воде","m":"nautilus/1541-nautilus-pompilius-progulki-po-vode.html","k":"nautilus-pompilius/progulki-po-vode/"},{"a":"Юрий Антонов","s":"Мечты Сбываются","m":"antonov/264778-yuriy-antonov-mechta-sbyvayetsya.html"},{"a":"Сплин","s":"Моё Сердце","m":"splin/271863-splin-moye-serdtse.html","k":"splin/mojo-serdce/"},{"a":"Валерий Леонтьев","s":"Полёт На Дельтаплане","m":"leontyev_v/83267-leontev-valerij-polyot-na-deltaplane.html","k":"valeriy-leontev/polyot-na-deltaplane/"},{"a":"Шура (Shura)","s":"Ты Не Верь Слезам","m":"sura/66299-shura-ty-ne-ver-slezam.html","k":"shura/ty-ne-ver-slezam/"},{"a":"AP$ENT","s":"Можно Я С Тобой","m":"apent/270825-apent-mozhno-ya-s-toboy.html"},{"a":"Леонид Агутин","s":"Я Буду Всегда С Тобой","m":"agutin/277275-leonid-agutin-ya-budu-vsegda-s-toboy.html","k":"leonid-agutin/ya-budu-vsegda-s-toboy/"},{"a":"The Mamas & The Papas","s":"California Dreamin","m":"mamas_papas/80652-mamas-and-the-papas-california-dreaming.html"},{"a":"Lionel Richie","s":"Hello","m":"lionel-richie/93963-lionel-richie-hello.html"},{"a":"Кино","s":"Уходи","m":"kino/254853-kino-ukhodi.html"},{"a":"Браво","s":"Жар-Птица","m":"bravo/5971-bravo-zhar-ptica.html"},{"a":"Кино","s":"Это Не Любовь","m":"kino/244814-kino-eto-ne-lyubov.html","k":"kino/eto-ne-lyubov/"},{"a":"Misc Soundtrack","s":"Служебный Роман - Моей Душе Покоя Нет","m":"alisa-freyndlikh/159157-kf-sluzhebnyj-roman-moej-dushe-pokoya-net.html"},{"a":"Jaak Joala (Яак Йоала)","s":"Я Тебя Рисую","m":"ak-oala/100746-ak-oala-tebya-risuyu.html"},{"a":"Кино","s":"Саша","m":"kino/1152-kino-sasha.html"},{"a":"Rauf & Faik","s":"Колыбельная","m":"rauf-faik/123050-rauf-faik-kolybelnaya.html"},{"a":"Алёна Свиридова","s":"Будет Так Всегда","m":"sviridova_a/121349-sviridova-alena-budet-tak-vsegda.html"},{"a":"Travis","s":"Sing","m":"travis/83601-travis-sing.html"},{"a":"Måneskin","s":"Beggin","m":"maneskin/151927-mneskin-beggin.html"},{"a":"Ярослав Евдокимов","s":"Фантазер","m":"evdokimov_ya/24818-ya-evdokimov-fantazer.html","k":"yaroslav-evdokimov/fantazyor/"},{"a":"Владимир Кузьмин","s":"Моя Любовь","m":"kuzmin/15159-kuzmin-vladimir-moya-lyubov.html"},{"a":"Найк Борзов","s":"Верхом На Звезде","m":"borzov/12791-borzov-najk-verxom-na-zvezde.html","k":"nayk-borzov/verhom-na-zvezde/"},{"a":"Моральный Кодекс","s":"Первый Снег","m":"mkodeks/15839-moralnyj-kodeks-pervyj-sneg.html","k":"moralnyy-kodeks/pervyy-sneg/"},{"a":"Ben E. King","s":"Stand By Me","m":"ben-e-king/94008-ben-e-king-stand-by-me.html"},{"a":"Jack Savoretti","s":"Better Off Without Me"},{"a":"Мистер Кредо","s":"Медляк","m":"kredo/21140-mister-kredo-medlyak.html","k":"mister-kredo/medlyak/"},{"a":"Михаил Звездинский","s":"Очарована Околдована","m":"zvezdinskiy_m/32301-zvezdinskij-mixail-ocharovana-okoldovana.html","k":"mihail-zvezdinskiy/ocharovana-okoldovana/"},{"a":"Океан Ельзи","s":"На Небi","m":"okyean-el697zy/64266-okean-yelzy-na-nebi.html"},{"a":"Михаил Боярский","s":"Зеленоглазое Такси","m":"bojarsiy/13822-boyarskij-mixail-zelenoglazoe-taksi-2-variant.html","k":"mihail-boyarskiy/zelenoglazoe-taksi/"},{"a":"Король и Шут","s":"Ведьма И Осел","m":"kish/263707-korol-i-shut-vedma-i-osel.html","k":"korol-i-shut/vedma-i-osyol/"},{"a":"Metallica","s":"Nothing Else Matters","m":"metallica/4648-metallica-nothing-else-matters.html","k":"metallica/nothing-else-matters/"},{"a":"Ногу Свело!","s":"Наши Юные Смешные Голоса","m":"nogusvelo/16211-nogu-svelo-nashi-yunye-smeshnye-golosa.html","k":"nogu-svelo/nashi-yunye-smeshnye-golosa/"},{"a":"Atomic Rooster","s":"Cant Find A Reason"},{"a":"The Moody Blues","s":"Nights In White Satin","m":"the-moody-blues/122402-the-moody-blues-nights-in-white-satin.html"},{"a":"Анжелика Варум","s":"Художник Что Рисует Дождь"},{"a":"Кино","s":"Фильмы","m":"kino/1177-kino-filmy.html"},{"a":"Александр Розенбаум","s":"Покажите Мне Москву","m":"rozenbaum/16755-rozenbaum-aleksandr-pokazhite-mne-moskvu.html"},{"a":"Кино","s":"Невесёлая Песня","m":"kino/236285-kino-neveselaya-pesnya.html","k":"kino/nevesyolaya-pesnya/"},{"a":"Александр Розенбаум","s":"Отслужи По Мне Отслужи","m":"rozenbaum/16729-rozenbaum-aleksandr-otsluzhi-po-mne-otsluzhi.html"},{"a":"Кино","s":"Каждую Ночь","m":"kino/257556-kino-kazhduyu-noch.html"},{"a":"Кино","s":"Мы Хотим Танцевать","m":"kino/1120-kino-my-xotim-tancevat.html","k":"kino/my-hotim-tantsevat/"},{"a":"Кино","s":"Генерал","m":"kino/241105-kino-general.html"},{"a":"Electric Light Orchestra","s":"Ticket To The Moon","m":"orchestra/9992-electric-light-orchestra-ticket-to-the-moon.html"},{"a":"Кино","s":"Просто Хочешь Ты Знать","m":"kino/1143-kino-prosto-xochesh-ty-znat.html"},{"a":"Александр Розенбаум","s":"Дай Мне Минуту","m":"rozenbaum/16664-rozenbaum-aleksandr-daj-mne-minutu.html"},{"a":"Александр Розенбаум","s":"Мой Брат","m":"rozenbaum/16699-rozenbaum-aleksandr-moj-brat.html"},{"a":"Александр Розенбаум","s":"Ветер-Конокрад","m":"rozenbaum/16643-rozenbaum-aleksandr-veter-konokrad.html"},{"a":"Кино","s":"Я Объявляю Свой Дом","m":"kino/241911-kino-ya-obyavlyayu-svoy-dom.html","k":"kino/ya-obyavlyayu-svoy-dom/"},{"a":"Владимир Кузьмин","s":"Сказка В Моей Жизни","m":"kuzmin/15235-kuzmin-vladimir-skazka-v-moej-zhizni.html"},{"a":"Технология","s":"Рано Или Поздно","m":"tehnologia/132306-texnologiya-rano-ili-pozdno.html"},{"a":"Кино","s":"Ты Выглядишь Так Несовременно"},{"a":"Кино","s":"Дождь Для Нас","m":"kino/1084-kino-dozhd-dlya-nas.html"},{"a":"Кино","s":"Место Для Шага Вперед","m":"kino/1112-kino-mesto-dlya-shaga-vpered.html","k":"kino/mesto-dlya-shaga-vperyod/"},{"a":"Кино","s":"Красно-Желтые Дни","m":"kino/1102-kino-krasno-zheltye-dni.html","k":"kino/krasno-zhyoltye-dni/"},{"a":"Иверия","s":"Арго"},{"a":"Алексей Глызин","s":"Зимний Сад","m":"glyzin/264905-glyzin-aleksey-zimniy-sad.html"},{"a":"Paolo Nutini","s":"Scream"},{"a":"CKay","s":"Love Nwantiti","m":"ckay/156420-ckay-love-nwantiti.html"},{"a":"Celine Dion","s":"The Prayer Duet"},{"a":"Queen","s":"Bohemian Rhapsody","m":"queen/5839-queen-bohemian-rhapsody.html"},{"a":"Николай Носков","s":"Снег","m":"noskov/73225-noskov-nikolaj-sneg.html"},{"a":"The Beatles","s":"Hey Jude","m":"beatles/66767-the-beatles-hey-jude.html"},{"a":"Joseph Vincent","s":"Cant Take My Eyes Off You"},{"a":"Imagine Dragons","s":"Radioactive","m":"imagine_dragons/63834-imagine-dragons-radioactive.html","k":"imagine-dragons/radioactive/"},{"a":"Cat Stevens (Yusuf Islam)","s":"Wild World","m":"cat_stevens/32206-cat-stevens-wild-world.html"},{"a":"Николай Носков","s":"Это Здорово","m":"noskov/16330-noskov-nikolaj-yeto-zdorovo.html","k":"nikolay-noskov/eto-zdorovo/"},{"a":"A Great Big World","s":"Say Something","m":"aguilera_christina/66507-a-great-big-world-christina-aguilera-say-something.html"},{"a":"Кино","s":"Малыш","m":"kino/1109-kino-malysh.html","k":"kino/malysh/"},{"a":"Кино","s":"Последний Герой","m":"kino/1141-kino-poslednij-geroj.html","k":"kino/poslednij-geroj/"},{"a":"Кино","s":"Кукушка","m":"kino/273184-kino-kukushka.html","k":"kino/kukushka/"},{"a":"Океан Ельзи","s":"Мовчати","m":"okyean-el697zy/78462-okean-yelzy-movchati-skryabin-cover.html"},{"a":"Janaga","s":"Одинока Луна","m":"janaga/149945-janaga-odinoka-luna.html"},{"a":"Баста","s":"Сансара","m":"basta/92494-basta-sansara.html","k":"basta/sansara/"},{"a":"Noize MC","s":"Yes Future","m":"noize/60881-noize-mc-yes-future.html"},{"a":"Tracy Chapman","s":"Fast Car"},{"a":"Misc Cartoons","s":"В Синем Море В Белой Пене - Оставайся Мальчик С Нами","m":"anait-kanachyan/280360-anait-kanachyan-ostavaysya-malchik-s-nami-iz-mf-v.html"},{"a":"David Gray","s":"Sail Away","m":"gray_david/40026-gray-david-sail-away.html"},{"a":"Алексей Глызин","s":"Поздний Вечер В Соренто","m":"glyzin/27515-glyzin-aleksej-pozdnij-vecher-v-sorento.html"},{"a":"The Animals","s":"Dont Let Me Be Misunderstood","m":"animals/8508-animals-dont-let-me-be-misunderstood-2-variant.html"},{"a":"Кино","s":"Апрель","m":"kino/64467-kino-aprel.html","k":"kino/aprel/"},{"a":"ДДТ","s":"На Небе Вороны","k":"ddt/na-nebe-vorony/"},{"a":"Gorky Park","s":"Two Candles"},{"a":"James Arthur","s":"Impossible","m":"james_arthur/63240-james-arthur-impossible.html"},{"a":"Машина Времени","s":"Костер","m":"mashinavremeni/7191-mashina-vremeni-koster.html","k":"mashina-vremeni/kostyor/"},{"a":"Максим Фадеев","s":"Сестричка","m":"fadeev_m/25316-m-fadeev-sestrichka-ost-bednaya-sasha.html"},{"a":"Виктор Салтыков","s":"Белая Ночь","m":"saltykov_v/135797-saltykov-viktor-bela-no.html","k":"viktor-saltykov/belaya-noch/"},{"a":"Амега","s":"Лететь","m":"amega/25598-a-mega-letet.html","k":"amega/letet/"},{"a":"ДДТ","s":"Это Все","m":"ddt/11571-ddt-yeto-vse.html","k":"ddt/eto-vsyo/"},{"a":"Sam Cooke","s":"A Change Is Gonna Come","m":"cooke_sam/255168-sam-cooke-a-change-is-gonna-come.html"},{"a":"Elvis Presley","s":"Unchained Melody","m":"elvispresley/222492-elvis-presley-unchained-melody.html"},{"a":"Ария","s":"Осколок Льда","m":"aria/13-ariya-oskolok-lda-akkordy.html","k":"arija/oskolok-lda/"},{"a":"Nautilus Pompilius","s":"Песня Идущего Домой","m":"nautilus/193303-nautilus-pompilius-pesnya-idushhego-domoj.html"},{"a":"Чиж & Co","s":"Вечная Молодость","m":"ko/5120-chizh-i-ko-vechnaya-molodost.html","k":"chizh/vechnaya-molodost/"},{"a":"Калинов Мост","s":"Родная","m":"kalinovmost/14874-kalinov-most-rodnaya.html","k":"kalinov-most/rodnaya/"},{"a":"Дмитрий Колдун","s":"Царевна","m":"koldun_d/148480-dmitrij-koldun-carevna.html"},{"a":"The Beatles","s":"In My Life","m":"beatles/3142-the-beatles-in-my-life.html"},{"a":"Paolo Nutini","s":"Iron Sky","m":"paolo-nutini/101394-paolo-nutini-iron-sky.html"},{"a":"Ed Sheeran","s":"Make It Rain","m":"ed_sheeran/72546-ed-sheeran-make-it-rain.html"},{"a":"James Brown","s":"Its A Mans Mans Mans World","m":"jamesbrown/66747-james-brown-its-a-mans-mans-mans-world.html"},{"a":"Scorpions","s":"Maybe I Maybe You","m":"scorpions/64236-scorpions-mabye-i-mabye-you.html"},{"a":"Misc Soundtrack","s":"A Star Is Born - Always Remember Us This Way","m":"gaga/110416-lady-gaga-always-remember-us-this-way.html"},{"a":"Кино","s":"Хочу Перемен","m":"kino/1131-kino-peremen.html"},{"a":"Кино","s":"Алюминиевые Огурцы","m":"kino/273602-kino-alyuminiyevyye-ogurtsy.html","k":"kino/aljuminievye-ogurcy/"},{"a":"Кино","s":"Мама Анархия","m":"kino/1110-kino-mama-anarxiya.html","k":"kino/mama-anarhija/"},{"a":"Кино","s":"Муравейник","m":"kino/1119-kino-muravejnik.html","k":"kino/muraveynik/"},{"a":"Чиж & Co","s":"Вот Пуля Просвистела","m":"ko/5123-chizh-i-ko-vot-pulya-prosvistela.html","k":"chizh/vot-pulya-prosvistela/"},{"a":"Любэ","s":"Конь","m":"lyube/1902-lyubye-kon.html","k":"ljubje/kon/"},{"a":"Misc Soundtrack","s":"Дартаньян И Три Мушкетёра — Баллада Атоса","m":"koldun_d/148082-koldun-dmitrij-ballada-atosa-natalya-rudova.html"},{"a":"Кино","s":"Когда Твоя Девушка Больна","m":"kino/1098-kino-kogda-tvoya-devushka-bolna.html","k":"kino/kogda-tvoya-devushka-bolna/"},{"a":"Кино","s":"Восьмиклассница","m":"kino/1069-kino-vosmiklassnica.html","k":"kino/vosmiklassnica/"},{"a":"Игорь Саруханов","s":"Скрипка-Лиса","m":"saruhanov/17190-saruxanov-skripka-lisa.html"},{"a":"Nautilus Pompilius","s":"Гудбай Америка","m":"nautilus/263273-nautilus-pompilius-posledneye-pismo-gudbay-amerika.html","k":"nautilus-pompilius/gudbay-amerika/"},{"a":"Nautilus Pompilius","s":"Одинокая Птица","m":"nautilus/1526-nautilus-pompilius-odinokaya-ptica-2-variant.html","k":"nautilus-pompilius/odinokaya-ptitsa/"},{"a":"Peppino Gagliardi","s":"Che Vuole Questa Musica Stasera"},{"a":"Кино","s":"Сказка","m":"kino/1157-kino-skazka.html","k":"kino/skazka/"},{"a":"Кино","s":"Нам С Тобой","m":"kino/266715-kino-nam-s-toboy.html","k":"kino/nam-s-toboj/"},{"a":"Кино","s":"Печаль","m":"kino/1137-kino-pechal.html","k":"kino/pechal/"},{"a":"Nautilus Pompilius","s":"Дыхание","m":"nautilus/280582-nautilus-pompilius-dykhaniye.html","k":"nautilus-pompilius/dyhanie/"},{"a":"Ялла","s":"Последняя Поэма","m":"yalla/66615-yalla-poslednyaya-poyema.html","k":"yalla/poslednyaya-poema/"},{"a":"The Animals","s":"House Of The Rising Sun","m":"animals/8522-animals-the-house-of-the-rising-sun.html","k":"animals/the-house-of-the-rising-sun/"},{"a":"Саида Музаметзянова","s":"Су Буйлап"},{"a":"Gorky Park","s":"California Promises"},{"a":"Andy Williams","s":"Killing Me Softly"}];
 SONGS.forEach((s,i)=>s.id=i);
 const KEY='pesennik.v1';
-let st={fav:{},chords:{},tr:{},fs:15};
+let st={fav:{},chords:{},tr:{},capo:{},custom:[],order:[],fs:15};
 try{const raw=localStorage.getItem(KEY); if(raw) st=Object.assign(st,JSON.parse(raw));}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
 const $=id=>document.getElementById(id);
 const idOf=s=>s.a+'|'+s.s;   // стабильный ключ, не зависит от порядка
 function toast(t){const el=$('toast');el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,1800)}
 
-/* ---------- фильтры ---------- */
+/* ---------- данные: мои песни + список ---------- */
+['fav','chords','tr','capo'].forEach(k=>{if(!st[k]||typeof st[k]!=='object')st[k]={}});
+if(!Array.isArray(st.custom))st.custom=[]; if(!Array.isArray(st.order))st.order=[];
+function allSongs(){return st.custom.map(c=>({a:c.a,s:c.s,u:c.u,id:-c.t,custom:true})).concat(SONGS)}
+let ALL=allSongs();
+function refreshAll(){ALL=allSongs();fillArtists()}
+const has=s=>!!(st.chords[idOf(s)]||'').trim();
+
+/* сетлист: порядок песен «Для вечера» */
+function syncOrder(){const favs=new Set(Object.keys(st.fav).filter(k=>st.fav[k]));
+  st.order=st.order.filter(k=>favs.has(k)); favs.forEach(k=>{if(!st.order.includes(k))st.order.push(k)})}
+function toggleFav(k){if(st.fav[k])delete st.fav[k];else st.fav[k]=true;syncOrder();save()}
+syncOrder();
+
+/* ---------- фильтры и список ---------- */
 const FILTERS=[['all','Все'],['fav','★ Для вечера'],['mine','С моими аккордами']];
-let filter='all';
+let filter='all', lastItems=[];
 try{filter=localStorage.getItem(KEY+'.f')||'all'}catch(e){}
-const artists=[...new Set(SONGS.map(s=>s.a))].sort((a,b)=>a.localeCompare(b,'ru'));
-artists.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a+' ('+SONGS.filter(s=>s.a===a).length+')';$('artist').append(o)});
-function matches(s,f){const k=idOf(s);
-  if(f==='fav')return !!st.fav[k]; if(f==='mine')return !!(st.chords[k]||'').trim();
-  return true}
-function renderChips(){
-  $('chips').innerHTML='';
+function fillArtists(){const sel=$('artist'),v=sel.value,dl=$('artistList');
+  const arts=[...new Set(ALL.map(s=>s.a))].sort((a,b)=>a.localeCompare(b,'ru'));
+  sel.innerHTML='<option value="">Все исполнители</option>';dl.innerHTML='';
+  arts.forEach(a=>{const o=document.createElement('option');o.value=a;o.textContent=a+' ('+ALL.filter(s=>s.a===a).length+')';sel.append(o);
+    const d=document.createElement('option');d.value=a;dl.append(d)});
+  sel.value=arts.includes(v)?v:''}
+function matches(s,f){const k=idOf(s);if(f==='fav')return !!st.fav[k];if(f==='mine')return has(s);return true}
+function renderChips(){$('chips').innerHTML='';
   FILTERS.forEach(([v,t])=>{const b=document.createElement('button');b.className='chip';b.setAttribute('aria-pressed',filter===v);
-    b.innerHTML=t+'<span class="n">'+SONGS.filter(s=>matches(s,v)).length+'</span>';
-    b.onclick=()=>{filter=v;try{localStorage.setItem(KEY+'.f',v)}catch(e){};renderChips();renderList()};$('chips').append(b)});
-}
-const norm=t=>t.toLowerCase().replace(/ё/g,'е');
+    b.innerHTML=t+'<span class="n">'+ALL.filter(s=>matches(s,v)).length+'</span>';
+    b.onclick=()=>{filter=v;try{localStorage.setItem(KEY+'.f',v)}catch(e){};renderChips();renderList()};$('chips').append(b)})}
+const norm=t=>(t||'').toLowerCase().replace(/ё/g,'е');
 function renderList(){
   const q=norm($('q').value.trim()), ar=$('artist').value;
-  const items=SONGS.filter(s=>matches(s,filter)&&(!ar||s.a===ar)&&(!q||norm(s.s+' '+s.a).includes(q)));
+  const items=ALL.filter(s=>matches(s,filter)&&(!ar||s.a===ar)&&(!q||norm(s.s+' '+s.a+' '+(st.chords[idOf(s)]||'')).includes(q)));
   const so=$('sort').value, col=(x,y)=>x.localeCompare(y,'ru',{sensitivity:'base'});
-  const has=s=>!!(st.chords[idOf(s)]||'').trim();
-  const cmp={added:(x,y)=>x.id-y.id,'added-old':(x,y)=>y.id-x.id,song:(x,y)=>col(x.s,y.s)||col(x.a,y.a),artist:(x,y)=>col(x.a,y.a)||col(x.s,y.s),
-    fav:(x,y)=>(!!st.fav[idOf(y)]-!!st.fav[idOf(x)])||x.id-y.id, mine:(x,y)=>(has(y)-has(x))||x.id-y.id}[so]||((x,y)=>x.id-y.id);
-  items.sort(cmp);
-  const ul=$('list');ul.innerHTML='';
-  const frag=document.createDocumentFragment();
-  items.forEach(s=>{const k=idOf(s);const li=document.createElement('li');li.className='row';
-    li.innerHTML='<button class="open"><span class="t"></span><span class="a"></span></button><button class="star'+(st.fav[k]?' on':'')+'" aria-label="Для вечера">★</button>';
-    li.querySelector('.t').textContent=s.s; if((st.chords[k]||'').trim()) li.querySelector('.t').insertAdjacentHTML('beforeend','<span class="mine">мои</span>');
+  const setlist=filter==='fav';
+  const cmp=setlist?(x,y)=>st.order.indexOf(idOf(x))-st.order.indexOf(idOf(y)):
+    ({added:(x,y)=>x.id-y.id,'added-old':(x,y)=>y.id-x.id,song:(x,y)=>col(x.s,y.s)||col(x.a,y.a),artist:(x,y)=>col(x.a,y.a)||col(x.s,y.s),
+    fav:(x,y)=>(!!st.fav[idOf(y)]-!!st.fav[idOf(x)])||x.id-y.id, mine:(x,y)=>(has(y)-has(x))||x.id-y.id}[so]||((x,y)=>x.id-y.id));
+  items.sort(cmp); lastItems=items;
+  $('setnote').hidden=!setlist||!items.length; $('sort').disabled=setlist;
+  const ul=$('list');ul.innerHTML='';const frag=document.createDocumentFragment();
+  items.forEach((s,i)=>{const k=idOf(s);const li=document.createElement('li');li.className='row'+(setlist?' with-reo':'');
+    li.innerHTML=(setlist?'<span class="reo"><button aria-label="Выше">▲</button><button aria-label="Ниже">▼</button></span>':'')+
+      '<button class="open"><span class="t"></span><span class="a"></span></button><button class="star'+(st.fav[k]?' on':'')+'" aria-label="Для вечера">★</button>';
+    const tt=li.querySelector('.t');tt.textContent=(setlist?(i+1)+'. ':'')+s.s;
+    if(has(s))tt.insertAdjacentHTML('beforeend','<span class="mine">мои</span>');
+    if(s.custom)tt.insertAdjacentHTML('beforeend','<span class="mine">добавил</span>');
     li.querySelector('.a').textContent=s.a;
     li.querySelector('.open').onclick=()=>openSong(s);
-    li.querySelector('.star').onclick=e=>{st.fav[k]=!st.fav[k];if(!st.fav[k])delete st.fav[k];save();e.currentTarget.classList.toggle('on');renderChips();if(filter==='fav')renderList()};
+    li.querySelector('.star').onclick=()=>{toggleFav(k);renderChips();renderList()};
+    if(setlist){const [up,dn]=li.querySelectorAll('.reo button');
+      up.onclick=()=>moveInSet(k,-1);dn.onclick=()=>moveInSet(k,1);up.disabled=i===0;dn.disabled=i===items.length-1}
     frag.append(li)});
-  ul.append(frag); $('empty').hidden=items.length>0;
-  $('count').textContent=items.length===SONGS.length?SONGS.length+' песен':items.length+' из '+SONGS.length;
+  ul.append(frag);$('empty').hidden=items.length>0;
+  $('empty').textContent=setlist?'В сетлисте пусто. Отметь песни звёздочкой.':'Ничего не нашлось';
+  $('count').textContent=items.length===ALL.length?ALL.length+' песен':items.length+' из '+ALL.length;
 }
-$('q').oninput=renderList; $('artist').onchange=renderList;
+function moveInSet(k,d){const i=st.order.indexOf(k),j=i+d;if(i<0||j<0||j>=st.order.length)return;
+  [st.order[i],st.order[j]]=[st.order[j],st.order[i]];save();renderList()}
+$('q').oninput=renderList;$('artist').onchange=renderList;
 try{const so=localStorage.getItem(KEY+'.sort');if(so)$('sort').value=so}catch(e){}
 $('sort').onchange=()=>{try{localStorage.setItem(KEY+'.sort',$('sort').value)}catch(e){};renderList()};
 
-/* ---------- аккорды: распознавание и транспонирование ---------- */
+/* ---------- добавление песни ---------- */
+$('addBtn').onclick=()=>{$('addForm').reset();$('addModal').hidden=false;setTimeout(()=>$('nA').focus(),50)};
+$('addCancel').onclick=()=>{$('addModal').hidden=true};
+$('addModal').onclick=e=>{if(e.target.id==='addModal')$('addModal').hidden=true};
+$('addForm').onsubmit=e=>{e.preventDefault();
+  const a=$('nA').value.trim(),s=$('nS').value.trim();let u=$('nU').value.trim();
+  if(!a||!s){toast('Заполни исполнителя и название');return}
+  if(u&&!/^https?:\/\//i.test(u))u='https://'+u;
+  if(ALL.some(x=>norm(x.a)===norm(a)&&norm(x.s)===norm(s))){toast('Такая песня уже есть');return}
+  const c={a,s,t:Date.now()};if(u)c.u=u;st.custom.push(c);save();refreshAll();
+  $('addModal').hidden=true;$('q').value='';renderChips();renderList();toast('Песня добавлена');openSong(ALL.find(x=>x.custom&&x.a===a&&x.s===s))};
+
+/* ---------- аккорды: распознавание, транспонирование ---------- */
 const NOTES=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const FLAT={'Db':'C#','Eb':'D#','Gb':'F#','Ab':'G#','Bb':'A#','Cb':'B','Fb':'E','E#':'F','B#':'C'};
 const CHORD=/^\(?([A-H](?:#|b)?)((?:maj|min|dim|aug|sus|add|m|M|\+|°|ø|\d|\(|\)|b|#)*)(?:\/([A-H](?:#|b)?))?\)?$/;
-function noteIdx(n){if(n==='H')return 11; n=FLAT[n]||n; return NOTES.indexOf(n)}
-function shift(n,t){const i=noteIdx(n);if(i<0)return n;let r=NOTES[((i+t)%12+12)%12];if(n==='H'&&r==='B')r='H';return r}
-function trChord(c,t){const m=c.match(CHORD);if(!m)return c;
+function noteIdx(n){if(n==='H')return 11;n=FLAT[n]||n;return NOTES.indexOf(n)}
+const OUT=['C','C#','D','Eb','E','F','F#','G','G#','A','Bb','B'];
+function shift(n,t){const i=noteIdx(n);if(i<0)return n;let r=OUT[((i+t)%12+12)%12];if(n==='H'&&r==='B')r='H';return r}
+function trChord(c,t){if(!CHORD.test(c)||!t)return c;
   return c.replace(/^(\(?)([A-H](?:#|b)?)/,(x,p,n)=>p+shift(n,t)).replace(/\/([A-H](?:#|b)?)/,(x,n)=>'/'+shift(n,t))}
 const isChord=w=>CHORD.test(w);
-function esc(t){return t.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function esc(t){return t.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+const cspan=c=>'<span class="c" data-c="'+esc(c)+'">'+esc(c)+'</span>';
 function render(text,t){
   return text.split('\n').map(line=>{
-    // [Am] внутри текста
-    if(/\[[A-H][^\]]*\]/.test(line)) return esc(line).replace(/\[([A-H][^\]]*)\]/g,(x,c)=>'<span class="c">'+esc(isChord(c)?trChord(c,t):c)+'</span>');
+    if(/\[[A-H][^\]]*\]/.test(line))return esc(line).replace(/\[([A-H][^\]]*)\]/g,(x,c)=>isChord(c)?cspan(trChord(c,t)):'['+c+']');
     const words=line.trim().split(/\s+/).filter(Boolean);
     const chordLine=words.length&&words.every(w=>isChord(w)||/^[|\-–x×\d:.]+$/.test(w));
-    if(!chordLine) return esc(line);
-    return line.replace(/\S+/g,w=>isChord(w)?'<span class="c">'+esc(trChord(w,t))+'</span>':esc(w));
-  }).join('\n');
-}
+    if(!chordLine)return esc(line);
+    return line.replace(/\S+/g,w=>isChord(w)?cspan(trChord(w,t)):esc(w));
+  }).join('\n')}
+
+/* ---------- схемы аккордов ---------- */
+// струны E A D G B e; -1 = не играть
+const OPEN={'C':[-1,3,2,0,1,0],'C7':[-1,3,2,3,1,0],'Cmaj7':[-1,3,2,0,0,0],'Cadd9':[-1,3,2,0,3,0],
+ 'D':[-1,-1,0,2,3,2],'Dm':[-1,-1,0,2,3,1],'D7':[-1,-1,0,2,1,2],'Dm7':[-1,-1,0,2,1,1],'Dmaj7':[-1,-1,0,2,2,2],'Dsus2':[-1,-1,0,2,3,0],'Dsus4':[-1,-1,0,2,3,3],
+ 'E':[0,2,2,1,0,0],'Em':[0,2,2,0,0,0],'E7':[0,2,0,1,0,0],'Em7':[0,2,2,0,3,0],'Esus4':[0,2,2,2,0,0],
+ 'F':[1,3,3,2,1,1],'Fmaj7':[-1,-1,3,2,1,0],
+ 'G':[3,2,0,0,0,3],'G7':[3,2,0,0,0,1],'Gmaj7':[3,2,0,0,0,2],
+ 'A':[-1,0,2,2,2,0],'Am':[-1,0,2,2,1,0],'A7':[-1,0,2,0,2,0],'Am7':[-1,0,2,0,1,0],'Amaj7':[-1,0,2,1,2,0],'Asus2':[-1,0,2,2,0,0],'Asus4':[-1,0,2,2,3,0],
+ 'B7':[-1,2,1,2,0,2]};
+const ESH={'':[0,2,2,1,0,0],m:[0,2,2,0,0,0],'7':[0,2,0,1,0,0],m7:[0,2,0,0,0,0],maj7:[0,2,1,1,0,0],sus4:[0,2,2,2,0,0]};
+const ASH={'':[-1,0,2,2,2,0],m:[-1,0,2,2,1,0],'7':[-1,0,2,0,2,0],m7:[-1,0,2,0,1,0],maj7:[-1,0,2,1,2,0],sus2:[-1,0,2,2,0,0],sus4:[-1,0,2,2,3,0],dim:[-1,0,1,2,1,-1]};
+function shapeOf(ch){const m=ch.replace(/[()]/g,'').match(/^([A-H](?:#|b)?)([^/]*)/);if(!m)return null;
+  let root=m[1],suf=m[2],approx=false;
+  const r=noteIdx(root);if(r<0)return null;const rn=NOTES[r];
+  let q=suf;if(q==='M7')q='maj7';if(q==='min')q='m';if(q==='sus')q='sus4';if(q==='min7')q='m7';
+  const key=rn+q;if(OPEN[key])return{f:OPEN[key],approx:false};
+  if(!(q in ESH)&&!(q in ASH)){approx=true;q=/^m(?!aj)/.test(q)?'m':''}   // 6, 9, add9 и т.п. — базовая форма
+  if(OPEN[rn+q])return{f:OPEN[rn+q],approx};
+  const fe=(r-4+12)%12, fa=(r-9+12)%12;   // лад баррэ на 6-й (E) и 5-й (A) струне
+  const opts=[];
+  if(q in ESH&&fe>0)opts.push({f:ESH[q].map(x=>x<0?-1:x+fe),fret:fe});
+  if(q in ASH&&fa>0)opts.push({f:ASH[q].map(x=>x<0?-1:x+fa),fret:fa});
+  if(!opts.length)return null;opts.sort((x,y)=>x.fret-y.fret);return{f:opts[0].f,approx}}
+function diagramSVG(f){const fr=f.filter(x=>x>0),mx=Math.max(...fr,1),mn=Math.min(...fr,99);
+  const start=mx<=4?1:mn;const W=150,H=150,x0=22,y0=26,dx=(W-2*x0)/5,dy=22;
+  let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Схема аккорда">';
+  for(let i=0;i<6;i++)s+='<line class="ln" x1="'+(x0+i*dx)+'" y1="'+y0+'" x2="'+(x0+i*dx)+'" y2="'+(y0+5*dy)+'" stroke-width="1"/>';
+  for(let j=0;j<=5;j++)s+='<line class="'+(j===0&&start===1?'nut':'ln')+'" x1="'+x0+'" y1="'+(y0+j*dy)+'" x2="'+(x0+5*dx)+'" y2="'+(y0+j*dy)+'" stroke-width="'+(j===0&&start===1?4:1)+'"/>';
+  if(start>1)s+='<text class="tx" x="'+(x0+5*dx+6)+'" y="'+(y0+dy*.7)+'">'+start+'</text>';
+  // баррэ: минимальный лад на нескольких струнах
+  const bar=fr.length?Math.min(...fr):0,barS=f.map((x,i)=>x===bar?i:-1).filter(i=>i>=0);
+  if(bar>0&&barS.length>=2&&barS[barS.length-1]-barS[0]>=2&&f.slice(barS[0],barS[barS.length-1]+1).every(x=>x>=bar)){const a=barS[0],b=barS[barS.length-1],y=y0+(bar-start+.5)*dy;
+    s+='<rect class="dt" x="'+(x0+a*dx-6)+'" y="'+(y-6)+'" width="'+((b-a)*dx+12)+'" height="12" rx="6"/>'}
+  f.forEach((x,i)=>{const cx=x0+i*dx;
+    if(x<0)s+='<text class="tx" x="'+(cx-4)+'" y="'+(y0-8)+'">×</text>';
+    else if(x===0)s+='<circle cx="'+cx+'" cy="'+(y0-12)+'" r="4" fill="none" class="ln" stroke-width="1.5"/>';
+    else s+='<circle class="dt" cx="'+cx+'" cy="'+(y0+(x-start+.5)*dy)+'" r="7"/>'});
+  return s+'</svg>'}
+function showDia(ch){const d=$('dia'),sh=shapeOf(ch);
+  d.innerHTML='<b>'+esc(ch)+'</b>'+(sh?diagramSVG(sh.f)+(sh.approx?'<small>упрощённая форма</small>':''):'<small>Схемы для этого аккорда нет</small>')+'<small>нажми, чтобы закрыть</small>';
+  d.hidden=false;clearTimeout(showDia.t);showDia.t=setTimeout(()=>d.hidden=true,6000)}
+$('dia').onclick=()=>{$('dia').hidden=true};
+$('view').addEventListener('click',e=>{const c=e.target.closest('.c');if(c)showDia(c.dataset.c)});
 
 /* ---------- экран песни ---------- */
-let cur=null, editing=false;
-function openSong(s){cur=s;editing=false;const k=idOf(s);
-  $('sTitle').textContent=s.s;$('sArtist').textContent=s.a;
-  $('sStar').classList.toggle('on',!!st.fav[k]);
+let cur=null,editing=false,confirmDel=false;
+function openSong(s){if(!s)return;cur=s;editing=false;confirmDel=false;const k=idOf(s);
+  $('sTitle').textContent=s.s;$('sArtist').textContent=s.a;$('sStar').classList.toggle('on',!!st.fav[k]);
   const L=$('sLinks');L.innerHTML='';
-  const add=(href,name)=>{const a=document.createElement('a');a.href=href;a.target='_blank';a.rel='noopener';a.innerHTML='<i>♪</i>'+name+' ↗';L.append(a)};
+  const add=(href,name)=>{const a=document.createElement('a');a.href=href;a.target='_blank';a.rel='noopener';a.innerHTML='<i>♪</i>';a.append(name+' ↗');L.append(a)};
   if(s.m)add('https://mychords.net/ru/'+s.m,'mychords.net');
   if(s.k)add('https://akkords.pro/songs/'+s.k,'akkords.pro');
-  if(!s.m&&!s.k){add('https://yandex.ru/search/?text='+encodeURIComponent(s.a.replace(/^Misc \w+/,'')+' '+s.s+' аккорды'),'Найти в Яндексе');
-    L.insertAdjacentHTML('beforeend','<span class="none">На mychords и akkords.pro этой песни нет</span>')}
-  renderView();$('sheet').hidden=false;$('sBody').scrollTop=0;document.body.style.overflow='hidden';
-}
-$('sStar').onclick=()=>{const k=idOf(cur);st.fav[k]=!st.fav[k];if(!st.fav[k])delete st.fav[k];save();$('sStar').classList.toggle('on',!!st.fav[k]);renderChips();renderList()};
-function closeSong(){stopScroll();$('sheet').hidden=true;document.body.style.overflow='';cur=null}
+  if(s.u){let h='ссылка';try{h=new URL(s.u).hostname.replace(/^www\./,'')}catch(e){}add(s.u,h)}
+  if(!s.m&&!s.k&&!s.u)add('https://yandex.ru/search/?text='+encodeURIComponent(s.a.replace(/^Misc \w+/,'')+' '+s.s+' аккорды'),'Найти в Яндексе');
+  $('delWrap').hidden=!s.custom;renderDel();
+  renderView();renderNav();$('dia').hidden=true;$('sheet').hidden=false;$('sBody').scrollTop=0;document.body.style.overflow='hidden'}
+function renderNav(){const i=lastItems.findIndex(x=>idOf(x)===idOf(cur)),n=lastItems.length;
+  $('songnav').hidden=i<0||n<2;$('navPos').textContent=(i+1)+' из '+n+(filter==='fav'?' · сетлист':'');
+  $('prevBtn').disabled=i<=0;$('nextBtn').disabled=i<0||i>=n-1}
+function go(d){const i=lastItems.findIndex(x=>idOf(x)===idOf(cur)),j=i+d;
+  if(i<0||j<0||j>=lastItems.length)return;const wasPlaying=!!raf;stopScroll();openSong(lastItems[j]);if(wasPlaying&&has(lastItems[j]))startScroll()}
+$('prevBtn').onclick=()=>go(-1);$('nextBtn').onclick=()=>go(1);
+// свайп влево/вправо — следующая/предыдущая песня
+let tx0=0,ty0=0;
+$('sBody').addEventListener('touchstart',e=>{const t=e.touches[0];tx0=t.clientX;ty0=t.clientY},{passive:true});
+$('sBody').addEventListener('touchend',e=>{if(editing)return;const t=e.changedTouches[0],dx=t.clientX-tx0,dy=t.clientY-ty0;
+  if(Math.abs(dx)>70&&Math.abs(dy)<50)go(dx<0?1:-1)},{passive:true});
+$('sStar').onclick=()=>{const k=idOf(cur);toggleFav(k);$('sStar').classList.toggle('on',!!st.fav[k]);renderChips();renderList();renderNav()};
+function closeSong(){stopScroll();$('scrollbar').hidden=true;$('dia').hidden=true;$('sheet').hidden=true;document.body.style.overflow='';cur=null}
 $('back').onclick=closeSong;
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('modal').hidden)$('modal').hidden=true;else if(cur)closeSong()}});
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;
+  if(!$('addModal').hidden)$('addModal').hidden=true;else if(!$('modal').hidden)$('modal').hidden=true;else if(!$('dia').hidden)$('dia').hidden=true;else if(cur)closeSong()});
 
-function renderView(){const k=idOf(cur),text=st.chords[k]||'',t=st.tr[k]||0,v=$('view');
-  $('tVal').textContent=(t>0?'+':'')+t; document.documentElement.style.setProperty('--fs',st.fs+'px');
+function renderDel(){const w=$('delWrap');if(!cur||!cur.custom)return;
+  if(!confirmDel){w.innerHTML='<button class="btn danger" id="delBtn">Удалить песню</button>';$('delBtn').onclick=()=>{confirmDel=true;renderDel()}}
+  else{w.innerHTML='<div class="confirm">Удалить «'+esc(cur.s)+'» вместе с аккордами? <button class="btn danger" id="delYes">Удалить</button><button class="btn" id="delNo">Отмена</button></div>';
+    $('delNo').onclick=()=>{confirmDel=false;renderDel()};
+    $('delYes').onclick=()=>{const k=idOf(cur);st.custom=st.custom.filter(c=>c.a+'|'+c.s!==k);delete st.chords[k];delete st.tr[k];delete st.capo[k];delete st.fav[k];syncOrder();save();
+      refreshAll();closeSong();renderChips();renderList();toast('Песня удалена')}}}
+
+function renderView(){const k=idOf(cur),text=st.chords[k]||'',t=st.tr[k]||0,c=st.capo[k]||0,v=$('view');
+  $('tVal').textContent=(t>0?'+':'')+t;$('cVal').textContent='капо '+c;
+  document.documentElement.style.setProperty('--fs',st.fs+'px');
   $('editBtn').textContent=editing?'Готово':(text.trim()?'Изменить':'Добавить');
-  ['tDown','tUp','playBtn'].forEach(id=>$(id).disabled=editing||!text.trim());
+  ['tDown','tUp','cDown','cUp','playBtn'].forEach(id=>$(id).disabled=editing||!text.trim());
+  const cn=$('capoNote');cn.hidden=editing||!text.trim()||!c;
+  if(c)cn.innerHTML='Каподастр на <b>'+c+' ладу</b>: показаны формы, которые нужно зажимать. Звучит как '+(t?'тональность '+(t>0?'+':'')+t:'оригинал')+'.';
   if(editing){v.innerHTML='<textarea class="edit" id="ed" placeholder="Вставь сюда аккорды с текстом"></textarea>';$('ed').value=text;$('ed').focus();return}
-  if(!text.trim()){v.innerHTML='<div class="hint">Здесь будут твои аккорды. Нажми «Добавить» и вставь текст с аккордами: строкой над словами (<code>Am  F  C  G</code>) или прямо в тексте (<code>[Am]Белый снег, [F]серый лёд</code>). Аккорды подсветятся, их можно транспонировать кнопками − и +.</div>';return}
-  v.innerHTML='<pre class="chords"></pre>';v.firstChild.innerHTML=render(text,t);
-}
+  if(!text.trim()){v.innerHTML='<div class="hint">Здесь будут твои аккорды. Нажми «Добавить» и вставь текст с аккордами: строкой над словами (<code>Am  F  C  G</code>) или прямо в тексте (<code>[Am]Белый снег, [F]серый лёд</code>). Аккорды подсветятся. Нажми на аккорд, и появится схема. Кнопки ± меняют тональность и лад каподастра.</div>';return}
+  v.innerHTML='<pre class="chords"></pre>';v.firstChild.innerHTML=render(text,t-c)}
 $('editBtn').onclick=()=>{if(editing){const k=idOf(cur),val=$('ed').value;if(val.trim())st.chords[k]=val;else delete st.chords[k];save();toast('Сохранено');renderList();renderChips()}
   editing=!editing;renderView()};
 const trBy=d=>{const k=idOf(cur);st.tr[k]=(((st.tr[k]||0)+d+18)%12)-6;if(!st.tr[k])delete st.tr[k];save();renderView()};
+const capoBy=d=>{const k=idOf(cur);st.capo[k]=Math.min(9,Math.max(0,(st.capo[k]||0)+d));if(!st.capo[k])delete st.capo[k];save();renderView()};
 $('tDown').onclick=()=>trBy(-1);$('tUp').onclick=()=>trBy(1);
+$('cDown').onclick=()=>capoBy(-1);$('cUp').onclick=()=>capoBy(1);
 $('fDown').onclick=()=>{st.fs=Math.max(11,st.fs-1);save();renderView()};
 $('fUp').onclick=()=>{st.fs=Math.min(26,st.fs+1);save();renderView()};
 
@@ -284,29 +420,29 @@ let raf=0,last=0,acc=0,lock=null;
 try{const sp=+localStorage.getItem(KEY+'.sp');if(sp)$('speed').value=sp}catch(e){}
 $('spdVal').textContent=$('speed').value;
 function tick(ts){const body=$('sBody');if(last){acc+=(ts-last)/1000*(+$('speed').value)*9;const px=Math.floor(acc);if(px){body.scrollTop+=px;acc-=px}}
-  last=ts; if(body.scrollTop+body.clientHeight>=body.scrollHeight-2){stopScroll();toast('Конец песни');return} raf=requestAnimationFrame(tick)}
+  last=ts;if(body.scrollTop+body.clientHeight>=body.scrollHeight-2){stopScroll();toast('Конец песни');return}raf=requestAnimationFrame(tick)}
 async function startScroll(){if(raf)return;last=0;acc=0;raf=requestAnimationFrame(tick);$('scrollbar').hidden=false;$('pauseBtn').textContent='❚❚';
   try{lock=await navigator.wakeLock?.request('screen')}catch(e){}}
 function stopScroll(){cancelAnimationFrame(raf);raf=0;$('pauseBtn').textContent='▶';try{lock&&lock.release()}catch(e){}lock=null}
 $('playBtn').onclick=()=>{$('scrollbar').hidden=false;startScroll()};
 $('pauseBtn').onclick=()=>raf?stopScroll():startScroll();
 $('speed').oninput=e=>{$('spdVal').textContent=e.target.value;try{localStorage.setItem(KEY+'.sp',e.target.value)}catch(e){}};
-$('back').addEventListener('click',()=>{$('scrollbar').hidden=true});
 
 /* ---------- резервная копия ---------- */
 $('backupBtn').onclick=()=>{$('modal').hidden=false};
 $('closeModal').onclick=()=>{$('modal').hidden=true};
 $('modal').onclick=e=>{if(e.target.id==='modal')$('modal').hidden=true};
-$('expBtn').onclick=()=>{const txt=JSON.stringify({app:'pesennik',v:1,data:st});
+$('expBtn').onclick=()=>{const txt=JSON.stringify({app:'pesennik',v:2,data:st});
   const fallback=()=>{$('impText').value=txt;$('impText').select();toast('Выдели текст и скопируй')};
-  try{navigator.clipboard.writeText(txt).then(()=>toast('Копия скопирована'),fallback)}catch(e){fallback()}
-  try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:'application/json'}));a.download='pesennik-backup.json';a.click()}catch(e){}};
-function restore(txt){try{const o=JSON.parse(txt);const d=o.data||o;if(!d.fav&&!d.chords)throw 0;st=Object.assign({fav:{},chords:{},tr:{},fs:15},d);save();renderChips();renderList();$('modal').hidden=true;toast('Восстановлено')}
+  try{navigator.clipboard.writeText(txt).then(()=>toast('Копия скопирована'),fallback)}catch(e){fallback()}};
+function restore(txt){try{const o=JSON.parse(txt);const d=o.data||o;if(!d.fav&&!d.chords)throw 0;
+  st=Object.assign({fav:{},chords:{},tr:{},capo:{},custom:[],order:[],fs:15},d);syncOrder();save();refreshAll();renderChips();renderList();$('modal').hidden=true;toast('Восстановлено')}
   catch(e){toast('Это не похоже на копию песенника')}}
 $('impBtn').onclick=()=>restore($('impText').value);
 $('impFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>restore(r.result);r.readAsText(f)};
 
-renderChips();renderList();
+fillArtists();renderChips();renderList();
+
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 
