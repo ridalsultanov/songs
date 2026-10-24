@@ -279,7 +279,8 @@ const pl=n=>n+' '+(n%10===1&&n%100!==11?'песня':n%10>=2&&n%10<=4&&(n%100<10
 function hue(str){let h=0;for(const c of str)h=(h*31+c.codePointAt(0))%360;return h}
 function initials(a){a=a.replace(/^Misc\s+\w+/,'♪').replace(/\(.*?\)/g,'').trim();if(a==='♪')return '♪';
   const w=a.split(/[\s\-&]+/).filter(Boolean);return ((w[0]||'')[0]+(w[1]?w[1][0]:(w[0]||'')[1]||'')).toUpperCase()}
-const COV=(m,n)=>'https://cdn-images.dzcdn.net/images/cover/'+m+'/'+n+'x'+n+'-000000-80-0-0.jpg';
+const COVER_BASE='covers/';
+const COV=(m,n)=>COVER_BASE+m+'.jpg';
 function artHTML(s,size,cls){return '<span class="art'+(cls?' '+cls:'')+'" style="'+artStyle(s.a)+'">'+esc(initials(s.a))+(s.c?'<img src="'+COV(s.c,size)+'" alt="" loading="lazy" decoding="async" onerror="this.remove()">':'')+'</span>'}
 function artStyle(a){const h=hue(a);return 'background:linear-gradient(140deg,hsl('+h+' 70% 58%),hsl('+((h+40)%360)+' 65% 38%))'}
 
