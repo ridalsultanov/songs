@@ -136,20 +136,20 @@ pre.chords .c:active{background:var(--fill2)}
 .nextcard .lbl{font-size:12px;color:var(--fg2);text-transform:uppercase;letter-spacing:.05em;font-weight:600}
 .nextcard .t{font-weight:600}
 .nextcard svg{margin-left:auto;stroke:var(--fg3)}
-.pad-bottom{height:calc(150px + env(safe-area-inset-bottom,0px))}
+.pad-bottom{height:calc(90px + env(safe-area-inset-bottom,0px))}
 
 /* плавающая панель */
-.player{position:absolute;left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:5;border-radius:22px;border:.5px solid var(--glass-line);box-shadow:var(--shadow);padding:8px;display:flex;flex-direction:column;gap:8px;max-width:520px;margin:0 auto}
-.prow{display:flex;align-items:center;gap:6px;justify-content:space-between}
-.step{display:flex;align-items:center;background:var(--fill);border-radius:14px;height:44px}
-.step button{width:30px;height:44px;font-size:20px;color:var(--fg)}
+.player{position:absolute;left:0;right:0;bottom:0;z-index:5;border-top:.5px solid var(--sep);padding:6px max(10px,env(safe-area-inset-right,0px)) calc(4px + env(safe-area-inset-bottom,0px)) max(10px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:6px}
+.prow{display:flex;align-items:center;gap:6px;justify-content:space-between;width:100%;max-width:520px;margin:0 auto}
+.step{display:flex;align-items:center;background:var(--fill);border-radius:12px;height:40px}
+.step button{width:30px;height:40px;font-size:20px;color:var(--fg)}
 .step output{min-width:38px;text-align:center;display:flex;flex-direction:column;line-height:1.05}
 .step output b{font-size:15px;font-variant-numeric:tabular-nums}
 .step output small{font-size:10px;color:var(--fg2);text-transform:uppercase;letter-spacing:.05em}
-.round{width:42px;height:44px;border-radius:21px;flex:none;display:grid;place-items:center;background:var(--fill);font-weight:700;font-size:15px}
+.round{width:40px;height:40px;border-radius:20px;flex:none;display:grid;place-items:center;background:var(--fill);font-weight:700;font-size:15px}
 .round.play{background:var(--accent);color:var(--accent-ink)}
 .round.play svg{width:20px;height:20px;fill:currentColor;stroke:none}
-.speed{display:flex;align-items:center;gap:10px;padding:0 6px}
+.speed{display:flex;align-items:center;gap:10px;padding:0 6px;width:100%;max-width:520px;margin:0 auto}
 .speed input{flex:1;accent-color:var(--accent)}
 .speed span{font-size:13px;color:var(--fg2);font-variant-numeric:tabular-nums;min-width:5ch;text-align:right}
 
@@ -183,7 +183,7 @@ pre.chords .c:active{background:var(--fill2)}
 .note{font-size:13px;color:var(--fg2);line-height:1.45;margin:0 4px}
 
 /* схема аккорда */
-.dia{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom,0px));z-index:50;transform:translate(-50%,10px) scale(.96);opacity:0;pointer-events:none;transition:all .2s;border-radius:20px;border:.5px solid var(--glass-line);box-shadow:var(--shadow);padding:14px 18px 12px;text-align:center;width:200px}
+.dia{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:50;transform:translate(-50%,10px) scale(.96);opacity:0;pointer-events:none;transition:all .2s;border-radius:20px;border:.5px solid var(--glass-line);box-shadow:var(--shadow);padding:14px 18px 12px;text-align:center;width:200px}
 .dia.on{opacity:1;transform:translate(-50%,0) scale(1);pointer-events:auto}
 .dia b{font-family:var(--f-mono);font-size:20px;color:var(--chord)}
 .dia small{display:block;color:var(--fg2);font-size:12px;margin-top:4px}
@@ -207,6 +207,12 @@ pre.chords .c:active{background:var(--fill2)}
 .round.stg svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2}
 .pastebar{display:flex;gap:8px}
 .pastebar .pill{flex:1;height:38px;font-size:15px}
+.tn-lvl{width:100%;height:4px;border-radius:2px;background:var(--fill);overflow:hidden}
+.tn-lvl i{display:block;height:100%;width:0;background:#34C759;transition:width .08s}
+.sd.simp{justify-content:center;gap:6px;background:var(--fill);color:var(--accent)}
+.sd.simp .ico{font-size:24px;line-height:58px;height:58px}
+.sd.simp.on{background:var(--accent);color:var(--accent-ink)}
+.sd.simp.on b{color:var(--accent-ink)}
 .tuner{align-items:center;text-align:center;padding-top:10px}
 .tn-note{font-size:96px;font-weight:700;line-height:1;letter-spacing:-.02em;display:flex;align-items:flex-start;gap:4px;justify-content:center}
 .tn-note small{font-size:24px;color:var(--fg2);margin-top:12px}
@@ -297,7 +303,7 @@ pre.chords .c:active{background:var(--fill2)}
     <div class="speed" id="speedRow" hidden><span style="text-align:left;min-width:0">Скорость</span><input type="range" id="speed" min="1" max="10" value="3" aria-label="Скорость прокрутки"><span id="spdVal">3</span></div>
     <div class="prow">
       <div class="step"><button id="tDown" aria-label="Тон ниже">−</button><output><b id="tVal">0</b><small>тон</small></output><button id="tUp" aria-label="Тон выше">+</button></div>
-      <div class="step"><button id="cDown" aria-label="Каподастр ниже">−</button><output><b id="cVal">0</b><small>капо</small></output><button id="cUp" aria-label="Каподастр выше">+</button></div>
+      <div class="step"><button id="cDown" aria-label="Каподастр ниже">−</button><output id="capoHelp" role="button" tabindex="0" style="cursor:pointer" aria-label="Что такое капо"><b id="cVal">0</b><small>капо ⓘ</small></output><button id="cUp" aria-label="Каподастр выше">+</button></div>
       <button class="round" id="fsBtn" aria-label="Размер текста">Aa</button>
       <button class="round stg" id="stageBtn" aria-label="Режим сцены"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
       <button class="round play" id="playBtn" aria-label="Автопрокрутка"><svg viewBox="0 0 24 24" id="playIco"><path d="M7 4.5v15l13-7.5z"/></svg></button>
@@ -316,7 +322,7 @@ SONGS.forEach((s,i)=>s.id=i);
 const KEY='pesennik.v1';
 let st={fav:{},chords:{},tr:{},capo:{},custom:[],order:[],hist:[],fs:16};
 try{const raw=localStorage.getItem(KEY);if(raw)st=Object.assign(st,JSON.parse(raw))}catch(e){}
-['fav','chords','tr','capo'].forEach(k=>{if(!st[k]||typeof st[k]!=='object')st[k]={}});
+['fav','chords','tr','capo','simp','simpPrev'].forEach(k=>{if(!st[k]||typeof st[k]!=='object')st[k]={}});
 if(!Array.isArray(st.custom))st.custom=[];if(!Array.isArray(st.order))st.order=[];
 function save(){st.updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}if(typeof push==='function')push()}
 const ls={get(k,d){try{const v=localStorage.getItem(KEY+'.'+k);return v===null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(KEY+'.'+k,v)}catch(e){}}};
@@ -492,7 +498,11 @@ const CHORD=/^\(?([A-H](?:#|b)?)((?:maj|min|dim|aug|sus|add|m|M|\+|°|ø|\d|\(|\
 function noteIdx(n){if(n==='H')return 11;n=FLAT[n]||n;return NOTES.indexOf(n)}
 const OUT=['C','C#','D','Eb','E','F','F#','G','G#','A','Bb','B'];
 function shift(n,t){const i=noteIdx(n);if(i<0)return n;let r=OUT[((i+t)%12+12)%12];if(n==='H'&&r==='B')r='H';return r}
-function trChord(c,t){if(!CHORD.test(c)||!t)return c;
+let SIMP=false;
+function simpleName(c){const m=c.replace(/[()]/g,'').match(/^([A-H](?:#|b)?)([^/]*)/);if(!m)return c;const s=m[2];
+  const r=/^(m(?!aj)|min)/.test(s)||/^dim/.test(s)?'m':s==='7'?'7':'';return m[1]+r}
+const trChord=(c,t)=>trChord0(SIMP?simpleName(c):c,t);
+function trChord0(c,t){if(!CHORD.test(c)||!t)return c;
   return c.replace(/^(\(?)([A-H](?:#|b)?)/,(x,p,n)=>p+shift(n,t)).replace(/\/([A-H](?:#|b)?)/,(x,n)=>'/'+shift(n,t))}
 const isChord=w=>CHORD.test(w);
 const cspan=c=>'<span class="c" data-c="'+esc(c)+'">'+esc(c)+'</span>';
@@ -611,12 +621,13 @@ $('sMore').onclick=()=>{const s=cur,g=[[{t:has(s)?'Править аккорды
 function confirmDelete(s){actionSheet('Удалить «'+esc(s.s)+'» вместе с аккордами?',[[{t:'Удалить песню',cls:'danger',fn:()=>{const k=idOf(s);
   st.custom=st.custom.filter(c=>c.a+'|'+c.s!==k);['chords','tr','capo','fav'].forEach(x=>delete st[x][k]);syncOrder();save();ALL=allSongs();closeSong();toast('Песня удалена')}}]])}
 
-function renderView(){const k=idOf(cur),text=st.chords[k]||'',t=st.tr[k]||0,c=st.capo[k]||0,v=$('view');
+function renderView(){const k=idOf(cur),text=st.chords[k]||'',t=st.tr[k]||0,c=st.capo[k]||0,v=$('view');SIMP=!!st.simp[k];
   $('tVal').textContent=(t>0?'+':'')+t;$('cVal').textContent=c;
   document.documentElement.style.setProperty('--fs',st.fs+'px');
   $('player').hidden=!text.trim();
   const cn=$('capoNote');cn.hidden=!text.trim()||!c;
-  if(c)cn.innerHTML='Каподастр на <b>'+c+' ладу</b> — показаны формы для зажима. Звучит как '+(t?'тон '+(t>0?'+':'')+t:'оригинал')+'.';
+  cn.hidden=!text.trim()||(!c&&!SIMP);
+  if(c||SIMP)cn.innerHTML=(SIMP?'✦ <b>Упрощено</b> — аккорды без усложнений'+(c?', ':'. '):'')+(c?(SIMP?'каподастр':'Каподастр')+' на <b>'+c+' ладу</b> — играй показанные формы. Звучит как '+(t?'тон '+(t>0?'+':'')+t:'оригинал')+'.':'');
   if(!text.trim()){v.innerHTML='<div class="emptycard"><p>Своих аккордов к этой песне пока нет. Вставь текст с аккордами строкой над словами (<code>Am  F  C  G</code>) или прямо в тексте (<code>[Am]Белый снег</code>).</p><button class="pill primary" id="addCh">Добавить аккорды</button></div>'+
       '<p class="flabel" style="margin-top:22px">Аккорды на сайтах</p><div class="sites">'+linksOf(cur).map(l=>'<a href="'+esc(l.href)+'" target="_blank" rel="noopener">'+esc(l.t)+'<span>↗</span></a>').join('')+'</div>';
     $('addCh').onclick=openEditor;$('strip').hidden=true;return}
@@ -675,10 +686,34 @@ const nameOf=u=>NAMES[u]||u;
 if(!Array.isArray(st.hist))st.hist=[];
 
 /* ---------- полоска схем аккордов ---------- */
+/* ---------- полоска схем + кнопка «Проще» ---------- */
 function renderStrip(){const s=$('strip');if(!s)return;const list=[...new Set([...$('view').querySelectorAll('.c')].map(x=>x.dataset.c))];
   if(!list.length){s.hidden=true;s.innerHTML='';return}
-  s.hidden=false;s.innerHTML=list.map(ch=>{const sh=shapeOf(ch);return '<button class="sd" data-c="'+esc(ch)+'">'+(sh?diagramSVG(sh.f):'<span class="nod">?</span>')+'<b>'+esc(ch)+'</b></button>'}).join('')}
-document.addEventListener('click',e=>{const b=e.target.closest('#strip .sd');if(b){e.stopPropagation();showDia(b.dataset.c)}},true);
+  const on=!!st.simp[idOf(cur)];
+  s.hidden=false;s.innerHTML='<button class="sd simp'+(on?' on':'')+'" id="simpBtn" aria-pressed="'+on+'"><span class="ico">✦</span><b>'+(on?'Как было':'Проще')+'</b></button>'+
+    list.map(ch=>{const sh=shapeOf(ch);return '<button class="sd" data-c="'+esc(ch)+'">'+(sh?diagramSVG(sh.f):'<span class="nod">?</span>')+'<b>'+esc(ch)+'</b></button>'}).join('');
+  $('simpBtn').onclick=e=>{e.stopPropagation();toggleSimp()}}
+// сложность формы: открытый аккорд 0, F 2.5, баррэ 3
+function difficulty(name){const m=name.match(/^([A-H](?:#|b)?)(.*)$/);if(!m)return 3;const r=noteIdx(m[1]);if(r<0)return 3;const key=NOTES[r]+m[2];
+  if(key==='F')return 2.5;return OPEN[key]?0:3}
+function toggleSimp(){const k=idOf(cur);
+  if(st.simp[k]){delete st.simp[k];const pc=st.simpPrev[k];if(pc)st.capo[k]=pc;else delete st.capo[k];delete st.simpPrev[k];save();renderView();toast('Вернул как было');return}
+  const t=st.tr[k]||0;SIMP=true;const tmp=document.createElement('div');tmp.innerHTML=renderNice(st.chords[k]||'',t);
+  const names=[...new Set([...tmp.querySelectorAll('.c')].map(x=>x.dataset.c))];
+  let best=0,bs=1e9;for(let cp=0;cp<=7;cp++){const sc=names.reduce((a,n)=>a+difficulty(trChord0(n,-cp)),0)+cp*.2;if(sc<bs-1e-9){bs=sc;best=cp}}
+  st.simpPrev[k]=st.capo[k]||0;st.simp[k]=true;if(best)st.capo[k]=best;else delete st.capo[k];save();renderView();
+  const hard=names.reduce((a,n)=>a+(difficulty(trChord0(n,-best))>=2.5?1:0),0);
+  toast(best?'Капо на '+best+' лад — '+(hard?'баррэ осталось: '+hard:'без баррэ'):(hard?'Аккорды упрощены, баррэ: '+hard:'Аккорды упрощены, без баррэ'))}
+
+/* ---------- что такое капо ---------- */
+function openCapoHelp(){openSheet('<div class="shnav gut"><span></span><b>Каподастр</b><button class="r" id="cpDone">Понятно</button></div>'+
+  '<div class="shbody gut"><p class="note" style="font-size:16px;color:var(--fg)">Каподастр (капо) — зажим, который надевается на гриф и прижимает все струны на нужном ладу. Ты играешь привычные лёгкие формы, а звучат они выше.</p>'+
+  '<p class="note" style="font-size:16px;color:var(--fg)"><b>«Капо 2»</b> — надень каподастр на 2-й лад. Приложение покажет формы, которые нужно зажимать, а песня прозвучит как в оригинале.</p>'+
+  '<p class="note" style="font-size:16px;color:var(--fg)">Пример: песня в Bm со сплошными баррэ → капо на 2 лад → играешь Am, F, C, G.</p>'+
+  '<p class="note" style="font-size:16px;color:var(--fg)"><b>Тон ±</b> — меняет саму высоту песни (под голос). <b>✦ Проще</b> — сам подберёт капо и уберёт сложные аккорды.</p></div>');
+  $('cpDone').onclick=closeSheet}
+$('capoHelp').onclick=openCapoHelp;
+document.addEventListener('click',e=>{const b=e.target.closest('#strip .sd[data-c]');if(b){e.stopPropagation();showDia(b.dataset.c)}},true);
 
 /* ---------- режим сцены ---------- */
 let stageLock=null;
@@ -759,23 +794,38 @@ function acf(buf,sr){let rms=0;for(const v of buf)rms+=v*v;rms=Math.sqrt(rms/buf
   let T0=mp;const x1=c[T0-1],x2=c[T0],x3=c[T0+1],a=(x1+x3-2*x2)/2,bb=(x3-x1)/2;if(a)T0=T0-bb/(2*a);return T0>0?sr/T0:-1}
 function openTuner(){openSheet('<div class="shnav gut"><span></span><b>Тюнер</b><button class="r" id="tnDone">Готово</button></div>'+
   '<div class="shbody gut tuner"><div class="tn-note"><span id="tnNote">—</span><small id="tnOct"></small></div><div class="tn-hz" id="tnHz">Сыграй открытую струну</div>'+
-  '<div class="tn-meter"><div class="tn-zero"></div><div class="tn-needle" id="tnNeedle"></div></div><div class="tn-scale"><span>−50</span><span>0</span><span>+50</span></div>'+
+  '<div class="tn-lvl"><i id="tnLvl"></i></div><div class="tn-meter"><div class="tn-zero"></div><div class="tn-needle" id="tnNeedle"></div></div><div class="tn-scale"><span>−50</span><span>0</span><span>+50</span></div>'+
   '<div class="tn-strings" id="tnStr">'+STRINGS.map((s,i)=>'<span data-i="'+i+'">'+s[0]+'</span>').join('')+'</div>'+
   '<button class="pill primary" id="tnStart">Включить микрофон</button><p class="note" id="tnMsg">Стандартный строй: E A D G B E. Держи телефон рядом с гитарой.</p></div>',{onClose:stopTuner});
   $('tnDone').onclick=closeSheet;$('tnStart').onclick=startTuner}
-async function startTuner(){try{
-    const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
-    const ctx=new (window.AudioContext||window.webkitAudioContext)();await ctx.resume();const src=ctx.createMediaStreamSource(stream),an=ctx.createAnalyser();an.fftSize=4096;src.connect(an);
-    const buf=new Float32Array(an.fftSize);tun={stream,ctx,raf:0,hist:[]};$('tnStart').hidden=true;
-    const loop=()=>{if(!tun)return;an.getFloatTimeDomainData(buf);const f=acf(buf,ctx.sampleRate);
-      if(f>60&&f<1200){tun.hist.push(f);if(tun.hist.length>5)tun.hist.shift();const fs=[...tun.hist].sort((a,b)=>a-b)[tun.hist.length>>1];
-        const n=12*Math.log2(fs/440)+69,r=Math.round(n),cents=Math.round((n-r)*100);
-        $('tnNote').textContent=NN[(r%12+12)%12];$('tnOct').textContent=Math.floor(r/12)-1;$('tnHz').textContent=fs.toFixed(1)+' Гц · '+(cents>0?'+':'')+cents+' центов';
-        const nd=$('tnNeedle');nd.style.left=(50+Math.max(-50,Math.min(50,cents)))+'%';nd.classList.toggle('ok',Math.abs(cents)<=5);
-        let bi=0,bd=1e9;STRINGS.forEach((s,i)=>{const d=Math.abs(12*Math.log2(fs/s[1]));if(d<bd){bd=d;bi=i}});
-        $('tnStr').querySelectorAll('span').forEach((e,i)=>e.classList.toggle('on',i===bi&&bd<2.5))}
-      tun.raf=requestAnimationFrame(loop)};loop()}
-  catch(e){$('tnMsg').textContent='Нет доступа к микрофону. Разреши его: Настройки → Safari → Микрофон.'}}
+async function startTuner(){const AC=window.AudioContext||window.webkitAudioContext;let ctx=null;
+  try{ctx=new AC();ctx.resume()}catch(e){}            // создаём и «будим» звук прямо в нажатии — иначе iPhone держит его на паузе
+  $('tnStart').textContent='Включаю микрофон…';$('tnStart').disabled=true;
+  let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}})}
+  catch(e){$('tnStart').hidden=true;$('tnMsg').textContent='Нет доступа к микрофону. Разреши: Настройки → Safari → Микрофон → «Разрешить», затем открой тюнер снова.';return}
+  if(!ctx)ctx=new AC();if(ctx.state!=='running'){try{await ctx.resume()}catch(e){}}
+  const src=ctx.createMediaStreamSource(stream),an=ctx.createAnalyser();an.fftSize=4096;src.connect(an);
+  const N=an.fftSize,buf=new Float32Array(N),sr=ctx.sampleRate;tun={stream,ctx,raf:0,hist:[],frame:0,heard:0,t0:performance.now()};
+  $('tnStart').hidden=true;$('tnMsg').textContent='Сыграй открытую струну и дай ей прозвучать.';
+  const minLag=Math.floor(sr/1000),maxLag=Math.min(Math.floor(sr/65),(N>>1)-2),W=N-maxLag,d=new Float32Array(maxLag+2);
+  const detect=()=>{let rms=0;for(let i=0;i<N;i++)rms+=buf[i]*buf[i];rms=Math.sqrt(rms/N);$('tnLvl').style.width=Math.min(100,rms*900)+'%';
+    if(rms<0.002)return -1;tun.heard++;
+    // YIN: разностная функция с нормировкой
+    d[0]=1;let run=0;for(let tau=1;tau<=maxLag;tau++){let s=0;for(let i=0;i<W;i+=2){const x=buf[i]-buf[i+tau];s+=x*x}run+=s;d[tau]=run?s*tau/run:1}
+    let tau=-1;for(let k=minLag;k<maxLag;k++){if(d[k]<0.15){while(k+1<maxLag&&d[k+1]<d[k])k++;tau=k;break}}
+    if(tau<0)return -1;const a=d[tau-1],b=d[tau],c=d[tau+1],den=a+c-2*b;const tt=den?tau+(a-c)/(2*den):tau;return sr/tt};
+  const loop=()=>{if(!tun)return;tun.raf=requestAnimationFrame(loop);if(tun.frame++%2)return;
+    if(ctx.state!=='running'){$('tnMsg').innerHTML='Звук на паузе. <button class="pill" id="tnWake" style="height:34px;margin-top:6px">Включить</button>';const w=$('tnWake');if(w)w.onclick=()=>ctx.resume();return}
+    an.getFloatTimeDomainData(buf);const f=detect();
+    if(!tun.heard&&performance.now()-tun.t0>4000)$('tnMsg').textContent='Микрофон молчит. Проверь, что тюнеру разрешён микрофон, и поднеси телефон к гитаре.';
+    if(f>60&&f<1100){tun.hist.push(f);if(tun.hist.length>5)tun.hist.shift();const fs=[...tun.hist].sort((x,y)=>x-y)[tun.hist.length>>1];
+      const n=12*Math.log2(fs/440)+69,r=Math.round(n),cents=Math.round((n-r)*100);
+      $('tnNote').textContent=NN[(r%12+12)%12];$('tnOct').textContent=Math.floor(r/12)-1;$('tnHz').textContent=fs.toFixed(1)+' Гц · '+(cents>0?'+':'')+cents+' центов';
+      const nd=$('tnNeedle');nd.style.left=(50+Math.max(-50,Math.min(50,cents)))+'%';nd.classList.toggle('ok',Math.abs(cents)<=5);
+      $('tnMsg').textContent=Math.abs(cents)<=5?'Чисто ✓':cents<0?'Ниже — подтяни струну':'Выше — ослабь струну';
+      let bi=0,bd=1e9;STRINGS.forEach((s,i)=>{const dd=Math.abs(12*Math.log2(fs/s[1]));if(dd<bd){bd=dd;bi=i}});
+      $('tnStr').querySelectorAll('span').forEach((e,i)=>e.classList.toggle('on',i===bi&&bd<2.5))}};
+  loop()}
 function stopTuner(){if(!tun)return;cancelAnimationFrame(tun.raf);tun.stream.getTracks().forEach(t=>t.stop());try{tun.ctx.close()}catch(e){}tun=null}
 
 /* ---------- история вечеров ---------- */
@@ -802,7 +852,7 @@ async function api(method,body){const r=await fetch(sync.url.replace(/\/+$/,'')+
   {method,headers:{'Authorization':'Bearer '+sync.pw,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,cache:'no-store'});
   let j={};try{j=await r.json()}catch(e){}return{status:r.status,j}}
 function applyRemote(d,updated){st=Object.assign({fav:{},chords:{},tr:{},capo:{},custom:[],order:[],hist:[],fs:16},d);st.updated=updated;
-  ['fav','chords','tr','capo'].forEach(k=>{if(!st[k]||typeof st[k]!=='object')st[k]={}});if(!Array.isArray(st.custom))st.custom=[];if(!Array.isArray(st.order))st.order=[];if(!Array.isArray(st.hist))st.hist=[];
+  ['fav','chords','tr','capo','simp','simpPrev'].forEach(k=>{if(!st[k]||typeof st[k]!=='object')st[k]={}});if(!Array.isArray(st.custom))st.custom=[];if(!Array.isArray(st.order))st.order=[];if(!Array.isArray(st.hist))st.hist=[];
   syncOrder();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}ALL=allSongs();renderHome();if(cur){const c=ALL.find(x=>idOf(x)===idOf(cur));if(c){cur=c;renderView();starSync();renderNext()}}}
 function mark(ok,msg){syncState={ok,at:Date.now(),msg:msg||''}}
 async function pull(){if(!syncOn()||pulling)return;pulling=true;
