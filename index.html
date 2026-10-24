@@ -275,7 +275,8 @@ function renderList(){
     frag.append(li)});
   ul.append(frag);$('empty').hidden=items.length>0;
   $('empty').textContent=setlist?'В сетлисте пусто. Отметь песни звёздочкой.':'Ничего не нашлось';
-  $('count').textContent=items.length===ALL.length?ALL.length+' песен':items.length+' из '+ALL.length;
+  const pl=n=>n+' '+(n%10===1&&n%100!==11?'песня':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'песни':'песен');
+  $('count').textContent=items.length===ALL.length?pl(ALL.length):items.length+' из '+ALL.length;
 }
 function moveInSet(k,d){const i=st.order.indexOf(k),j=i+d;if(i<0||j<0||j>=st.order.length)return;
   [st.order[i],st.order[j]]=[st.order[j],st.order[i]];save();renderList()}
