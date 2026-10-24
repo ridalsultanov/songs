@@ -267,7 +267,7 @@ let st={fav:{},chords:{},tr:{},capo:{},custom:[],order:[],fs:16};
 try{const raw=localStorage.getItem(KEY);if(raw)st=Object.assign(st,JSON.parse(raw))}catch(e){}
 ['fav','chords','tr','capo'].forEach(k=>{if(!st[k]||typeof st[k]!=='object')st[k]={}});
 if(!Array.isArray(st.custom))st.custom=[];if(!Array.isArray(st.order))st.order=[];
-function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+function save(){st.updated=Date.now();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}if(typeof push==='function')push()}
 const ls={get(k,d){try{const v=localStorage.getItem(KEY+'.'+k);return v===null?d:v}catch(e){return d}},set(k,v){try{localStorage.setItem(KEY+'.'+k,v)}catch(e){}}};
 const $=id=>document.getElementById(id);
 const idOf=s=>s.a+'|'+s.s;
@@ -406,7 +406,7 @@ function actionSheet(title,groups){
 /* меню «⋯» на главном */
 $('moreBtn').onclick=()=>actionSheet('Сортировка',[
   [['added','Недавно добавленные'],['song','По названию'],['artist','По исполнителю']].map(([v,t])=>({t,cls:'chk'+(sort===v?' on':''),fn:()=>{sort=v;ls.set('sort2',v);renderHome()}})),
-  [{t:'Резервная копия',fn:openBackup,delay:320}]]);
+  [{t:syncLabel(),fn:openSync,delay:320},{t:'Резервная копия',fn:openBackup,delay:320}]]);
 
 /* добавление песни */
 $('addBtn').onclick=()=>{const sh=openSheet('<div class="shnav gut"><button class="l" id="aCancel">Отмена</button><b>Новая песня</b><button class="r" id="aSave">Добавить</button></div>'+
@@ -573,9 +573,64 @@ function stopScroll(){cancelAnimationFrame(raf);raf=0;$('playIco').innerHTML='<p
 $('playBtn').onclick=()=>raf?stopScroll():startScroll();
 $('speed').oninput=e=>{$('spdVal').textContent=e.target.value;ls.set('sp',e.target.value)};
 
+/* ---------- синхронизация с сервером ---------- */
+const SYNC_USER='ridal', SYNC_URL='https://lad.201-51-31-250.sslip.io';
+let sync=null; try{sync=JSON.parse(ls.get('sync','null'))}catch(e){}
+let syncState={ok:null,at:0,msg:''}, pushT=0, pulling=false;
+const syncOn=()=>!!(sync&&sync.url&&sync.pw);
+async function api(method,body){const r=await fetch(sync.url.replace(/\/+$/,'')+'/api/'+encodeURIComponent(sync.user),
+  {method,headers:{'Authorization':'Bearer '+sync.pw,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,cache:'no-store'});
+  let j={};try{j=await r.json()}catch(e){}return{status:r.status,j}}
+function applyRemote(d,updated){st=Object.assign({fav:{},chords:{},tr:{},capo:{},custom:[],order:[],fs:16},d);st.updated=updated;
+  ['fav','chords','tr','capo'].forEach(k=>{if(!st[k]||typeof st[k]!=='object')st[k]={}});if(!Array.isArray(st.custom))st.custom=[];if(!Array.isArray(st.order))st.order=[];
+  syncOrder();try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}ALL=allSongs();renderHome();if(cur){const c=ALL.find(x=>idOf(x)===idOf(cur));if(c){cur=c;renderView();starSync();renderNext()}}}
+function mark(ok,msg){syncState={ok,at:Date.now(),msg:msg||''}}
+async function pull(){if(!syncOn()||pulling)return;pulling=true;
+  try{const {status,j}=await api('GET');
+    if(status===401){mark(false,'Неверный пароль');return}
+    if(status!==200){mark(false,'Сервер ответил '+status);return}
+    const lu=st.updated||0;
+    if(j.data&&j.updated>lu){applyRemote(j.data,j.updated);mark(true)}
+    else if(!j.data||j.updated<lu){await push(true)}
+    else mark(true)}
+  catch(e){mark(false,'Нет связи с сервером')}finally{pulling=false}}
+async function push(now){if(!syncOn())return;clearTimeout(pushT);
+  if(!now){pushT=setTimeout(()=>push(true),1500);return}
+  try{const {status,j}=await api('PUT',{data:st,updated:st.updated||Date.now()});
+    if(status===200)mark(true);else if(status===409&&j.data){applyRemote(j.data,j.updated);mark(true);toast('Подтянул новые данные с сервера')}
+    else mark(false,status===401?'Неверный пароль':'Сервер ответил '+status)}
+  catch(e){mark(false,'Нет связи — сохраню, когда появится интернет')}}
+addEventListener('online',()=>pull());
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')pull()});
+function syncLabel(){if(!syncOn())return 'Синхронизация · выкл';if(syncState.ok===false)return 'Синхронизация · ошибка';
+  if(syncState.ok)return 'Синхронизация · ✓ '+new Date(syncState.at).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});return 'Синхронизация · подключено'}
+function openSync(){const s=sync||{url:SYNC_URL,user:SYNC_USER,pw:''};
+  openSheet('<div class="shnav gut"><button class="l" id="syClose">Закрыть</button><b>Синхронизация</b><span></span></div>'+
+  '<div class="shbody gut"><p class="note">Звёздочки, твои аккорды и добавленные песни сохраняются на твоём сервере и появляются на любом устройстве. Удаление иконки больше ничего не сотрёт.</p>'+
+  '<div class="form"><input id="syUrl" placeholder="Адрес сервера" autocapitalize="off" autocomplete="off" inputmode="url"><input id="syUser" placeholder="Имя" autocapitalize="off" autocomplete="username"><input id="syPw" type="password" placeholder="Пароль" autocomplete="current-password"></div>'+
+  '<p class="note" id="syStat"></p><button class="pill primary" id="syGo">'+(syncOn()?'Сохранить и проверить':'Подключить')+'</button>'+(syncOn()?'<button class="pill" id="syOff">Отключить на этом устройстве</button>':'')+'</div>');
+  $('syUrl').value=s.url||SYNC_URL;$('syUser').value=s.user||SYNC_USER;$('syPw').value=s.pw||'';
+  const stat=$('syStat');stat.textContent=syncOn()?(syncState.ok===false?'⚠︎ '+syncState.msg:syncState.ok?'✓ Всё сохранено':''):'';
+  $('syClose').onclick=closeSheet;
+  if($('syOff'))$('syOff').onclick=()=>{sync=null;ls.set('sync','null');closeSheet();toast('Синхронизация выключена')};
+  $('syGo').onclick=async()=>{let url=$('syUrl').value.trim();if(url&&!/^https?:\/\//.test(url))url='https://'+url;
+    const prev=sync;sync={url,user:$('syUser').value.trim().toLowerCase(),pw:$('syPw').value.trim()};
+    if(!sync.url||!sync.user||!sync.pw){stat.textContent='Заполни адрес, имя и пароль';sync=prev;return}
+    stat.textContent='Проверяю…';
+    let res;try{res=await api('GET');
+      if(res.status===401){stat.textContent='⚠︎ Неверное имя или пароль';sync=prev;return}
+      if(res.status!==200){stat.textContent='⚠︎ Сервер ответил '+res.status;sync=prev;return}}
+    catch(e){stat.textContent='⚠︎ Не могу достучаться до сервера. Проверь адрес.';sync=prev;return}
+    ls.set('sync',JSON.stringify(sync));
+    // при подключении устройства данные с сервера главнее; пустой сервер получает данные этого телефона
+    if(!prev&&res.j.data){applyRemote(res.j.data,res.j.updated);mark(true);closeSheet();toast('Данные загружены с сервера');return}
+    if(!res.j.data){st.updated=st.updated||Date.now();await push(true)}else await pull();
+    closeSheet();toast('Синхронизация включена')}}
+
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('sheet').hidden)closeSheet();else if($('dia').classList.contains('on'))hideDia();else if(cur)closeSong()});
 
 renderHome();
+pull();
 if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;location.reload()}});navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})}).catch(()=>{})}
 </script>
 
