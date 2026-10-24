@@ -765,7 +765,7 @@ function diagramSVG(f){const fr=f.filter(x=>x>0),mx=Math.max(...fr,1),mn=Math.mi
 let cur=null;
 function linksOf(s){const L=[];if(s.m)L.push({t:'mychords.net',href:'https://mychords.net/ru/'+s.m});if(s.k)L.push({t:'akkords.pro',href:'https://akkords.pro/songs/'+s.k});
   if(s.u)L.push({t:'Моя ссылка',href:s.u});
-  if(!L.length)L.push({t:'Найти в Яндексе',href:'https://yandex.ru/search/?text='+encodeURIComponent(s.a.replace(/^Misc \w+/,'')+' '+s.s+' аккорды')});return L}
+  L.push({t:'Найти в Яндексе',href:'https://yandex.ru/search/?text='+encodeURIComponent((s.a.replace(/^Misc \w+/,'').trim()+' '+s.s.replace(/\s*\(ver \d+\)/i,'')+' аккорды').trim())});return L}
 function openSong(s){if(!s)return;stopMet();if(blind)setBlind(false);cur=s;const k=idOf(s),h=hue(s.a);
   $('sTitle').textContent=$('sNavTitle').textContent=s.s;$('sArtist').textContent=s.a;
   $('sArt').outerHTML=artHTML(s,500).replace('<span class="art"','<span class="art" id="sArt"');$('hero').style.setProperty('--aura','hsl('+h+' 75% 55%)');
