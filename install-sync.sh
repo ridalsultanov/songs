@@ -35,7 +35,7 @@ ReadWritePaths=$DATA
 WantedBy=multi-user.target
 EOF
 systemctl daemon-reload
-systemctl enable --now lad-sync >/dev/null
+systemctl enable lad-sync >/dev/null 2>&1; systemctl restart lad-sync
 sleep 1
 curl -fs "http://127.0.0.1:$PORT/api" >/dev/null || die "Служба не отвечает: journalctl -u lad-sync -n 30"
 
