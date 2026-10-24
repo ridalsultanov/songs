@@ -574,7 +574,7 @@ $('speed').oninput=e=>{$('spdVal').textContent=e.target.value;ls.set('sp',e.targ
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('sheet').hidden)closeSheet();else if($('dia').classList.contains('on'))hideDia();else if(cur)closeSong()});
 
 renderHome();
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;location.reload()}});navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})}).catch(()=>{})}
 </script>
 
 </body>
