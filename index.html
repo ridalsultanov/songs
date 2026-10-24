@@ -772,10 +772,11 @@ function openSong(s){if(!s)return;stopMet();if(blind)setBlind(false);cur=s;const
   $('hero').style.setProperty('--cover',coverURL(s)?'url("'+coverURL(s)+'")':'none');logPlayed(s);
   $('backLbl').textContent=tab==='eve'&&curPl&&plGet(curPl)?plGet(curPl).name:TITLES[tab];
   if(prac)stopPractice();markPlayed(s);heroMeta();
+  try{ls.set('open',JSON.stringify({k:idOf(s),tab,pl:curPl,ctx:lastItems.map(idOf),t:Date.now()}))}catch(e){}
   starSync();renderView();renderNext();hideDia();
   const p=$('song');p.classList.add('open');$('sBody').scrollTop=0;$('sNav').classList.remove('scrolled');document.body.style.overflow='hidden'}
 function starSync(){const on=inAnyPl(idOf(cur));const b=$('sStar');b.querySelector('path').style.fill=on?'var(--star)':'none';b.querySelector('path').style.stroke=on?'var(--star)':'currentColor';b.setAttribute('aria-pressed',on)}
-function closeSong(){stopPractice();stopRec(true);stopVoice();stopMet();setBlind(false);exitStage();stopScroll();hideDia();$('song').classList.remove('open');document.body.style.overflow='';cur=null;renderHome()}
+function closeSong(){ls.set('open','');if(window.__updReady){location.reload();return}stopPractice();stopRec(true);stopVoice();stopMet();setBlind(false);exitStage();stopScroll();hideDia();$('song').classList.remove('open');document.body.style.overflow='';cur=null;renderHome()}
 $('back').onclick=closeSong;
 $('sBody').addEventListener('scroll',()=>$('sNav').classList.toggle('scrolled',$('sBody').scrollTop>50),{passive:true});
 $('sStar').onclick=()=>openPicker(cur);
@@ -1291,8 +1292,13 @@ function openSync(){const s=sync||{url:SYNC_URL,user:SYNC_USER,pw:''};
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;if(!$('sheet').hidden)closeSheet();else if($('dia').classList.contains('on'))hideDia();else if(cur)closeSong()});
 
 renderHome();
+(()=>{let o=null;try{o=JSON.parse(ls.get('open','null'))}catch(e){}
+  if(!o||Date.now()-o.t>6*3600e3)return;const s=byKey(o.k);if(!s)return;
+  if(o.tab&&o.tab!==tab){tab=o.tab;ls.set('tab',tab)}curPl=o.pl||null;renderHome();
+  const ctx=(o.ctx||[]).map(byKey).filter(Boolean);lastItems=ctx.length?ctx:[s];
+  const p=$('song');p.style.transition='none';openSong(s);requestAnimationFrame(()=>p.style.transition='')})();
 pull();
-if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;location.reload()}});navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})}).catch(()=>{})}
+if('serviceWorker' in navigator){const had=!!navigator.serviceWorker.controller;let done=false;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!done){done=true;if(typeof cur!=='undefined'&&cur){window.__updReady=true}else location.reload()}});navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>{r.update();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')r.update()})}).catch(()=>{})}
 </script>
 
 </body>
