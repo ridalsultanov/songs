@@ -104,7 +104,8 @@ textarea.edit{width:100%;min-height:50vh;border:1px solid var(--line);border-rad
 .modal .box{background:var(--panel);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px}
 .modal h2{font-family:var(--f-display);font-size:1rem;font-weight:500;margin:0}
 .modal p{margin:0;color:var(--muted);font-size:.9rem}
-.modal textarea{width:100%;height:120px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:10px;font-family:var(--f-mono);font-size:12px}
+.modal textarea{width:100%;height:120px;color:var(--fg);border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:10px;font-family:var(--f-mono);font-size:12px}
+.modal #nC{height:34vh;font-size:14px;font-weight:400}
 .modal .row2{display:flex;flex-wrap:wrap;gap:8px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;z-index:80;font-size:.9rem}
 
@@ -203,7 +204,8 @@ pre.chords .c:active{background:var(--chip)}
   <h2>Новая песня</h2>
   <label class="field" for="nA">Исполнитель<input type="text" id="nA" required autocomplete="off" list="artistList"></label>
   <label class="field" for="nS">Название<input type="text" id="nS" required autocomplete="off"></label>
-  <label class="field" for="nU">Ссылка на аккорды (необязательно)<input type="text" inputmode="url" autocapitalize="off" id="nU" placeholder="mychords.net/…" autocomplete="off"></label>
+  <label class="field" for="nC">Текст с аккордами (можно позже)<textarea id="nC" placeholder="Am        F
+Белый снег, серый лёд…"></textarea></label>
   <div class="row2"><button class="btn primary" type="submit">Добавить</button><button class="btn" type="button" id="addCancel">Отмена</button></div>
 </form></div>
 <datalist id="artistList"></datalist>
@@ -289,11 +291,10 @@ $('addBtn').onclick=()=>{$('addForm').reset();$('addModal').hidden=false;setTime
 $('addCancel').onclick=()=>{$('addModal').hidden=true};
 $('addModal').onclick=e=>{if(e.target.id==='addModal')$('addModal').hidden=true};
 $('addForm').onsubmit=e=>{e.preventDefault();
-  const a=$('nA').value.trim(),s=$('nS').value.trim();let u=$('nU').value.trim();
+  const a=$('nA').value.trim(),s=$('nS').value.trim(),ch=$('nC').value;
   if(!a||!s){toast('Заполни исполнителя и название');return}
-  if(u&&!/^https?:\/\//i.test(u))u='https://'+u;
   if(ALL.some(x=>norm(x.a)===norm(a)&&norm(x.s)===norm(s))){toast('Такая песня уже есть');return}
-  const c={a,s,t:Date.now()};if(u)c.u=u;st.custom.push(c);save();refreshAll();
+  const c={a,s,t:Date.now()};st.custom.push(c);if(ch.trim())st.chords[a+'|'+s]=ch;save();refreshAll();
   $('addModal').hidden=true;$('q').value='';renderChips();renderList();toast('Песня добавлена');openSong(ALL.find(x=>x.custom&&x.a===a&&x.s===s))};
 
 /* ---------- аккорды: распознавание, транспонирование ---------- */

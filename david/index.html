@@ -104,7 +104,8 @@ textarea.edit{width:100%;min-height:50vh;border:1px solid var(--line);border-rad
 .modal .box{background:var(--panel);width:100%;max-width:560px;border-radius:18px 18px 0 0;padding:18px max(16px,env(safe-area-inset-right,0px)) calc(18px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px}
 .modal h2{font-family:var(--f-display);font-size:1rem;font-weight:500;margin:0}
 .modal p{margin:0;color:var(--muted);font-size:.9rem}
-.modal textarea{width:100%;height:120px;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:10px;font-family:var(--f-mono);font-size:12px}
+.modal textarea{width:100%;height:120px;color:var(--fg);border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:10px;font-family:var(--f-mono);font-size:12px}
+.modal #nC{height:34vh;font-size:14px;font-weight:400}
 .modal .row2{display:flex;flex-wrap:wrap;gap:8px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:999px;font-weight:600;z-index:80;font-size:.9rem}
 
@@ -203,14 +204,15 @@ pre.chords .c:active{background:var(--chip)}
   <h2>Новая песня</h2>
   <label class="field" for="nA">Исполнитель<input type="text" id="nA" required autocomplete="off" list="artistList"></label>
   <label class="field" for="nS">Название<input type="text" id="nS" required autocomplete="off"></label>
-  <label class="field" for="nU">Ссылка на аккорды (необязательно)<input type="text" inputmode="url" autocapitalize="off" id="nU" placeholder="mychords.net/…" autocomplete="off"></label>
+  <label class="field" for="nC">Текст с аккордами (можно позже)<textarea id="nC" placeholder="Am        F
+Белый снег, серый лёд…"></textarea></label>
   <div class="row2"><button class="btn primary" type="submit">Добавить</button><button class="btn" type="button" id="addCancel">Отмена</button></div>
 </form></div>
 <datalist id="artistList"></datalist>
 <div class="toast" id="toast" hidden></div>
 
 <script>
-const SONGS = [];
+const SONGS = [{"a":"Isko","s":"так не спокойна","m":"isko/264000-isko-tak-ne-spokoyna.html"},{"a":"Isko","s":"Любовь в ресторане","m":"isko/269657-isko-lyubov-v-restorane.html"},{"a":"Isko","s":"Влюблённые глаза","m":"isko/272703-isko-vlyublennyye-glaza.html"},{"a":"Isko","s":"Забери"},{"a":"Isko","s":"Хочешь"},{"a":"Isko","s":"Навсегда","m":"isko/277919-isko-navsegda.html"},{"a":"Isko","s":"Моя душа","m":"isko/269613-isko-moya-dusha.html"},{"a":"Isko","s":"Загадал тебя"},{"a":"Isko","s":"Вместе сияли","m":"isko/278546-isko-vmeste-siyali.html"},{"a":"Кино","s":"Группа крови","m":"kino/1078-kino-gruppa-krovi.html","k":"kino/gruppa-krovi/"},{"a":"Кино","s":"Звезда по имени Солнце","m":"kino/1090-kino-zvezda-po-imeni-solnce.html","k":"kino/zvezda-po-imeni-solnce/"},{"a":"Кино","s":"Кукушка","m":"kino/273184-kino-kukushka.html","k":"kino/kukushka/"},{"a":"Кино","s":"Пачка сигарет","m":"kino/1129-kino-pachka-sigaret.html","k":"kino/pachka-sigaret/"},{"a":"Кино","s":"Хочу перемен","m":"kino/1131-kino-peremen.html","k":"kino/peremen/"},{"a":"Кино","s":"Кончится лето","m":"kino/1100-kino-konchitsya-leto.html","k":"kino/konchitsja-leto/"},{"a":"Кино","s":"Восьмиклассница","m":"kino/1069-kino-vosmiklassnica.html","k":"kino/vosmiklassnica/"},{"a":"Кино","s":"Спокойная ночь","m":"kino/271660-kino-spokoynaya-noch.html","k":"kino/spokojnaya-noch/"},{"a":"Кино","s":"Апрель","m":"kino/64467-kino-aprel.html","k":"kino/aprel/"},{"a":"Кино","s":"Мама, мы все сошли с ума","m":"kino/1111-kino-mama-my-vse-soshli-s-uma.html"},{"a":"Кино","s":"Последний герой","m":"kino/1141-kino-poslednij-geroj.html","k":"kino/poslednij-geroj/"},{"a":"Кино","s":"Алюминиевые огурцы","m":"kino/273602-kino-alyuminiyevyye-ogurtsy.html","k":"kino/aljuminievye-ogurcy/"},{"a":"Кино","s":"Война","m":"kino/1067-kino-vojna.html","k":"kino/voyna-2/"},{"a":"Кино","s":"Песня без слов","m":"kino/1133-kino-pesnya-bez-slov.html","k":"kino/pesnja-bez-slov/"},{"a":"Кино","s":"Красно-жёлтые дни","m":"kino/1102-kino-krasno-zheltye-dni.html","k":"kino/krasno-zhyoltye-dni/"},{"a":"Кино","s":"Видели ночь","m":"kino/1065-kino-videli-noch.html","k":"kino/videli-noch/"},{"a":"Кино","s":"Печаль","m":"kino/1137-kino-pechal.html","k":"kino/pechal/"},{"a":"Кино","s":"Следи за собой","m":"kino/1159-kino-sledi-za-soboj.html","k":"kino/sledi-za-soboy/"},{"a":"Кино","s":"Бошетунмай","m":"kino/273607-kino-boshetunmay.html","k":"kino/boshetunmay/"},{"a":"Кино","s":"Легенда","m":"kino/248633-kino-legenda.html","k":"kino/legenda/"},{"a":"Кино","s":"Звёзды останутся здесь","m":"kino/272034-kino-zvezdy-ostanutsya-zdes.html"},{"a":"Кино","s":"Это не любовь","m":"kino/244814-kino-eto-ne-lyubov.html","k":"kino/eto-ne-lyubov/"},{"a":"Кино","s":"Нам с тобой","m":"kino/266715-kino-nam-s-toboy.html","k":"kino/nam-s-toboj/"},{"a":"Кино","s":"Электричка","m":"kino/277267-kino-elektrichka.html","k":"kino/elektrichka/"},{"a":"Кино","s":"Троллейбус","m":"kino/1172-kino-trollejbus.html","k":"kino/trolleybus/"},{"a":"Кино","s":"Когда твоя девушка больна","m":"kino/1098-kino-kogda-tvoya-devushka-bolna.html","k":"kino/kogda-tvoya-devushka-bolna/"},{"a":"Кино","s":"Дальше действовать будем мы","m":"kino/1080-kino-dalshe-dejstvovat-budem-my.html","k":"kino/dalshe-deystvovat-budem-my/"},{"a":"Кино","s":"Муравейник","m":"kino/1119-kino-muravejnik.html","k":"kino/muraveynik/"}];
 SONGS.forEach((s,i)=>s.id=i);
 const KEY='pesennik.david.v1';
 let st={fav:{},chords:{},tr:{},capo:{},custom:[],order:[],fs:15};
@@ -274,7 +276,7 @@ function renderList(){
       up.onclick=()=>moveInSet(k,-1);dn.onclick=()=>moveInSet(k,1);up.disabled=i===0;dn.disabled=i===items.length-1}
     frag.append(li)});
   ul.append(frag);$('empty').hidden=items.length>0;
-  $('empty').textContent=setlist?'В сетлисте пусто. Отметь песни звёздочкой.':(ALL.length?'Ничего не нашлось':'Песен пока нет. Нажми «＋ Песня» вверху и добавь первую.');
+  $('empty').textContent=setlist?'В сетлисте пусто. Отметь песни звёздочкой.':'Ничего не нашлось';
   const pl=n=>n+' '+(n%10===1&&n%100!==11?'песня':n%10>=2&&n%10<=4&&(n%100<10||n%100>=20)?'песни':'песен');
   $('count').textContent=items.length===ALL.length?pl(ALL.length):items.length+' из '+ALL.length;
 }
@@ -289,11 +291,10 @@ $('addBtn').onclick=()=>{$('addForm').reset();$('addModal').hidden=false;setTime
 $('addCancel').onclick=()=>{$('addModal').hidden=true};
 $('addModal').onclick=e=>{if(e.target.id==='addModal')$('addModal').hidden=true};
 $('addForm').onsubmit=e=>{e.preventDefault();
-  const a=$('nA').value.trim(),s=$('nS').value.trim();let u=$('nU').value.trim();
+  const a=$('nA').value.trim(),s=$('nS').value.trim(),ch=$('nC').value;
   if(!a||!s){toast('Заполни исполнителя и название');return}
-  if(u&&!/^https?:\/\//i.test(u))u='https://'+u;
   if(ALL.some(x=>norm(x.a)===norm(a)&&norm(x.s)===norm(s))){toast('Такая песня уже есть');return}
-  const c={a,s,t:Date.now()};if(u)c.u=u;st.custom.push(c);save();refreshAll();
+  const c={a,s,t:Date.now()};st.custom.push(c);if(ch.trim())st.chords[a+'|'+s]=ch;save();refreshAll();
   $('addModal').hidden=true;$('q').value='';renderChips();renderList();toast('Песня добавлена');openSong(ALL.find(x=>x.custom&&x.a===a&&x.s===s))};
 
 /* ---------- аккорды: распознавание, транспонирование ---------- */
