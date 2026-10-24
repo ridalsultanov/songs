@@ -1,11 +1,11 @@
 {
- "name": "Мой песенник",
- "short_name": "Песенник",
+ "name": "Лад",
+ "short_name": "Лад",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
- "background_color": "#111513",
- "theme_color": "#111513",
+ "background_color": "#000000",
+ "theme_color": "#000000",
  "lang": "ru",
  "icons": [
   {
