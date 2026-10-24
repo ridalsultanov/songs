@@ -238,6 +238,11 @@ pre.chords .c:active{background:var(--fill2)}
 .blindbar span{flex:1}
 .blindbar .pill{height:32px;padding:0 10px;font-size:14px}
 .strip.hide{display:none!important}
+.nbtn.mic.on{color:#fff;background:var(--danger);animation:micp 1.6s ease-in-out infinite}
+@keyframes micp{50%{box-shadow:0 0 0 6px color-mix(in srgb,var(--danger) 25%,transparent)}}
+.stage-mic{position:absolute;top:calc(8px + env(safe-area-inset-top,0px));right:calc(max(12px,env(safe-area-inset-right,0px)) + 48px);z-index:6;height:40px;padding:0 12px;border-radius:20px;border:.5px solid var(--glass-line);font-size:14px;color:var(--danger);font-weight:600;display:none}
+.stage .stage-mic:not([hidden]){display:block}
+@media (prefers-reduced-motion: reduce){.nbtn.mic.on{animation:none}}
 .tuner{align-items:center;text-align:center;padding-top:10px}
 .tn-note{font-size:96px;font-weight:700;line-height:1;letter-spacing:-.02em;display:flex;align-items:flex-start;gap:4px;justify-content:center}
 .tn-note small{font-size:24px;color:var(--fg2);margin-top:12px}
@@ -309,6 +314,7 @@ pre.chords .c:active{background:var(--fill2)}
     <div class="left"><button class="back" id="back"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg><span id="backLbl">Песни</span></button></div>
     <div class="mid" id="sNavTitle"></div>
     <div class="right">
+      <button class="nbtn mic" id="micBtn" aria-label="Голосовое управление" aria-pressed="false"><svg class="i" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
       <button class="nbtn" id="sStar" aria-label="В вечер"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></svg></button>
       <button class="nbtn" id="sMore" aria-label="Действия"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h.01M12 12h.01M16 12h.01" stroke-width="3"/></svg></button>
     </div>
@@ -326,6 +332,7 @@ pre.chords .c:active{background:var(--fill2)}
     </div>
   </div>
   <button class="stage-exit glass" id="stageExit" hidden aria-label="Выйти из режима сцены">✕</button>
+  <button class="stage-mic glass" id="stageMic" hidden aria-label="Выключить голосовое управление">● слушаю</button>
   <div class="player glass" id="player">
     <div class="speed" id="speedRow" hidden><span style="text-align:left;min-width:0">Скорость</span><input type="range" id="speed" min="1" max="10" value="3" aria-label="Скорость прокрутки"><span id="spdVal">3</span></div>
     <div class="prow">
@@ -637,7 +644,7 @@ function openSong(s){if(!s)return;stopMet();if(blind)setBlind(false);cur=s;const
   starSync();renderView();renderNext();hideDia();
   const p=$('song');p.classList.add('open');$('sBody').scrollTop=0;$('sNav').classList.remove('scrolled');document.body.style.overflow='hidden'}
 function starSync(){const on=!!st.fav[idOf(cur)];const b=$('sStar');b.querySelector('path').style.fill=on?'var(--star)':'none';b.querySelector('path').style.stroke=on?'var(--star)':'currentColor';b.setAttribute('aria-pressed',on)}
-function closeSong(){stopMet();setBlind(false);exitStage();stopScroll();hideDia();$('song').classList.remove('open');document.body.style.overflow='';cur=null;renderHome()}
+function closeSong(){stopVoice();stopMet();setBlind(false);exitStage();stopScroll();hideDia();$('song').classList.remove('open');document.body.style.overflow='';cur=null;renderHome()}
 $('back').onclick=closeSong;
 $('sBody').addEventListener('scroll',()=>$('sNav').classList.toggle('scrolled',$('sBody').scrollTop>50),{passive:true});
 $('sStar').onclick=()=>{toggleFav(idOf(cur));starSync();toast(st.fav[idOf(cur)]?'Добавлено в вечер':'Убрано из вечера');renderNext()};
@@ -916,6 +923,37 @@ function setBlind(on){blind=on;$('view').classList.toggle('blind',on);$('blindBa
   if(on){$('view').querySelectorAll('.c').forEach(c=>c.classList.remove('rv'));toast('Вспоминай аккорд и нажимай, чтобы проверить')}}
 $('blindAll').onclick=()=>$('view').querySelectorAll('.c').forEach(c=>c.classList.add('rv'));
 $('blindExit').onclick=()=>setBlind(false);
+
+/* ---------- голосовое управление ---------- */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+let voice=null;
+const VCMD=[
+  [/(дальше|следующ|вперёд|вперед|некст)/,()=>{go(1);return 'Следующая'}],
+  [/(назад|предыдущ|обратно)/,()=>{go(-1);return 'Предыдущая'}],
+  [/(стоп|пауза|хватит крутить|останов)/,()=>{if(raf)stopScroll();if(met)stopMet();return 'Стоп'}],
+  [/(поехали|старт|крути|прокрутк|играем|начали)/,()=>{if(has(cur)){startScroll();return 'Прокрутка'}}],
+  [/(вниз|ниже)/,()=>{$('sBody').scrollBy({top:$('sBody').clientHeight*.8,behavior:'smooth'});return 'Вниз'}],
+  [/(вверх|выше|наверх)/,()=>{$('sBody').scrollBy({top:-$('sBody').clientHeight*.8,behavior:'smooth'});return 'Вверх'}],
+  [/(метроном|ритм)/,()=>{if(met)stopMet();else if(grooveOf(idOf(cur)).p)startMet();return 'Метроном'}],
+  [/(сцена|крупно)/,()=>{enterStage();return 'Режим сцены'}],
+  [/(выключи голос|не слушай)/,()=>{stopVoice();return 'Голос выключен'}],
+];
+function voiceSync(){const b=$('micBtn');if(!b)return;b.classList.toggle('on',!!voice);b.setAttribute('aria-pressed',!!voice);$('stageMic').hidden=!voice}
+function startVoice(){if(!SR){toast('Этот браузер не умеет распознавать речь');return}
+  const r=new SR();r.lang='ru-RU';r.continuous=true;r.interimResults=true;r.maxAlternatives=3;
+  voice={r,last:0,lastText:''};
+  r.onresult=e=>{if(!voice)return;const now=Date.now();if(now-voice.last<1500)return;
+    for(let i=e.resultIndex;i<e.results.length;i++){const res=e.results[i];
+      for(let a=0;a<res.length;a++){const txt=res[a].transcript.toLowerCase().trim();if(!txt||txt===voice.lastText)continue;
+        const words=txt.split(/\s+/).slice(-3).join(' ');      // смотрим только последние слова — песня рядом может «наговорить» лишнего
+        for(const [re,fn] of VCMD){if(re.test(words)){const said=fn();if(said){voice.last=now;voice.lastText=txt;toast('🎙 '+said)}return}}}}};
+  r.onerror=e=>{if(!voice)return;if(e.error==='not-allowed'||e.error==='service-not-allowed'){stopVoice();toast('Разреши микрофон и распознавание речи в настройках');}};
+  r.onend=()=>{if(voice&&voice.r===r){try{r.start()}catch(e){}}};   // iPhone сам останавливает распознавание — перезапускаем
+  try{r.start();toast('Слушаю: «дальше», «назад», «стоп», «поехали», «вниз», «вверх»')}catch(e){voice=null;toast('Не получилось включить микрофон')}
+  voiceSync()}
+function stopVoice(){if(!voice)return;const r=voice.r;voice=null;try{r.stop()}catch(e){}voiceSync()}
+$('micBtn').onclick=()=>voice?stopVoice():startVoice();
+$('stageMic').onclick=e=>{e.stopPropagation();stopVoice()};
 
 /* ---------- синхронизация с сервером ---------- */
 const SYNC_USER='david', SYNC_URL='https://lad.201-51-31-250.sslip.io';
